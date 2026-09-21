@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Evaluación Económica de Proyectos Energéticos</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #f0f4f8;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    padding: 20px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  header h1 { font-size: 1.8em; color: #4ade80; }
+  header p { color: #cbd5e1; margin-top: 6px; }
+  .container {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 20px;
+    max-width: 1500px;
+    margin: auto;
+  }
+  @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+  .panel {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 18px;
+    backdrop-filter: blur(10px);
+  }
+  .panel h2 {
+    color: #4ade80;
+    margin-bottom: 12px;
+    border-bottom: 2px solid #4ade80;
+    padding-bottom: 6px;
+    font-size: 1.1em;
+  }
+  .input-group { margin-bottom: 14px; }
+  .input-group label {
+    display: block;
+    font-size: 0.85em;
+    color: #cbd5e1;
+    margin-bottom: 4px;
+  }
+  .input-group .row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  input[type="number"], input[type="range"] {
+    width: 100%;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #475569;
+    background: rgba(0,0,0,0.3);
+    color: #f0f4f8;
+    font-size: 0.95em;
+  }
+  input[type="range"] { padding: 0; }
+  .hint {
+    font-size: 0.75em;
+    color: #94a3b8;
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .tab {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85em;
+    transition: all 0.2s;
+  }
+  .tab.active {
+    background: #4ade80;
+    color: #0f2027;
+    font-weight: bold;
+  }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .kpi {
+    background: rgba(74, 222, 128, 0.08);
+    border: 1px solid rgba(74, 222, 128, 0.3);
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .kpi .label { font-size: 0.75em; color: #94a3b8; text-transform: uppercase; }
+  .kpi .value { font-size: 1.4em; font-weight: bold; color: #4ade80; margin-top: 4px; }
+  .kpi.warn .value { color: #fbbf24; }
+  .kpi.bad .value { color: #ef4444; }
+  .kpi.good .value { color: #4ade80; }
+  canvas {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    margin-top: 10px;
+  }
+  .info-box {
+    background: rgba(59, 130, 246, 0.1);
+    border-left: 4px solid #3b82f6;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 0.88em;
+    line-height: 1.5;
+  }
+  .info-box.warn {
+    background: rgba(251, 191, 36, 0.1);
+    border-left-color: #fbbf24;
+  }
+  .info-box.bad {
+    background: rgba(239, 68, 68, 0.1);
+    border-left-color: #ef4444;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85em;
+    margin-top: 10px;
+  }
+  th, td {
+    padding: 6px 8px;
+    text-align: right;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  th { background: rgba(74, 222, 128, 0.15); color: #4ade80; text-align: center; }
+  td:first-child { text-align: center; }
+  .scenario-bar {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  .scenario {
+    flex: 1;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.85em;
+  }
+  .scenario.base { background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; }
+  .scenario.opt { background: rgba(74,222,128,0.15); border: 1px solid #4ade80; }
+  .scenario.pes { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; }
+  .legend {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    font-size: 0.8em;
+    margin-top: 6px;
+    color: #cbd5e1;
+  }
+  .legend span::before {
+    content: "■ ";
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌱 Evaluación Económica de Proyectos Energéticos</h1>
+  <p>Calcula inversión, ahorro, retorno, VAN, TIR y LCOE · App 100% offline</p>
+</header>
+
+<div class="container">
+
+  <!-- PANEL DE ENTRADAS -->
+  <div class="panel">
+    <h2>📊 Parámetros del Proyecto</h2>
+
+    <div class="input-group">
+      <label>Inversión inicial (€)</label>
+      <input type="number" id="inversion" value="50000" min="0" step="1000">
+      <div class="hint">Coste total de instalación y puesta en marcha.</div>
+    </div>
+
+    <div class="input-group">
+      <label>Ahorro anual esperado (€/año)</label>
+      <input type="number" id="ahorro" value="6000" min="-5000" step="100">
+      <div class="hint">Puede ser negativo si el proyecto genera costes netos.</div>
+    </div>
+
+    <div class="input-group">
+      <label>Coste O&M anual (€/año)</label>
+      <input type="number" id="om" value="500" min="0" step="50">
+      <div class="hint">Operación y mantenimiento recurrentes.</div>
+    </div>
+
+    <div class="input-group">
+      <label>Vida útil del proyecto (años)</label>
+      <input type="range" id="vida" min="1" max="40" value="20">
+      <div class="row">
+        <input type="number" id="vidaNum" value="20" min="1" max="40">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Tasa de descuento (% anual)</label>
+      <input type="range" id="tasa" min="0" max="20" step="0.1" value="5">
+      <div class="row">
+        <input type="number" id="tasaNum" value="5" min="0" max="20" step="0.1">
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Energía generada anual (MWh)</label>
+      <input type="number" id="energia" value="80" min="0" step="1">
+      <div class="hint">Para calcular el LCOE (€/MWh).</div>
+    </div>
+
+    <div class="input-group">
+      <label>Degradación anual de la generación (%)</label>
+      <input type="number" id="degrad" value="0.5" min="0" max="10" step="0.1">
+      <div class="hint">Pérdida típica en paneles solares ~0.5%/año.</div>
+    </div>
+
+    <div class="input-group">
+      <label>Escalado del precio energía (%/año)</label>
+      <input type="number" id="escalado" value="2" min="-5" max="15" step="0.1">
+      <div class="hint">Incremento esperado del precio de la electricidad.</div>
+    </div>
+
+    <div class="info-box">
+      💡 <b>Tip:</b> Modifica los valores y los resultados se recalculan al instante.
+      Prueba con ahorro negativo para ver cómo el sistema te avisa.
+    </div>
+  </div>
+
+  <!-- PANEL DE RESULTADOS -->
+  <div class="panel">
+    <div class="tabs">
+      <div class="tab active" data-tab="resumen">📋 Resumen</div>
+      <div class="tab" data-tab="flujo">💰 Flujo de Caja</div>
+      <div class="tab" data-tab="escenarios">🎯 Escenarios</div>
+      <div class="tab" data-tab="sensibilidad">📈 Sensibilidad</div>
+      <div class="tab" data-tab="lcoe">⚡ LCOE</div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="tab-content active" id="resumen">
+      <h2>Indicadores clave</h2>
+      <div class="kpi-grid" id="kpis"></div>
+      <div id="diagnostico"></div>
+      <div class="info-box">
+        <b>📘 Interpretación rápida:</b><br>
+        • <b>Retorno simple:</b> años para recuperar la inversión con ahorro constante.<br>
+        • <b>VAN:</b> valor actual de todos los flujos. Si es &gt; 0, el proyecto crea valor.<br>
+        • <b>TIR:</b> rentabilidad interna. Debe superar la tasa de descuento.<br>
+        • <b>LCOE:</b> coste nivelado de la energía (€/MWh). Compáralo con el precio de mercado.
+      </div>
+    </div>
+
+    <!-- FLUJO DE CAJA -->
+    <div class="tab-content" id="flujo">
+      <h2>Flujo de caja anual y acumulado</h2>
+      <canvas id="canvasFlujo" width="900" height="380"></canvas>
+      <div class="legend">
+        <span style="color:#4ade80">Flujo anual</span>
+        <span style="color:#fbbf24">Acumulado</span>
+        <span style="color:#ef4444">Punto de retorno</span>
+      </div>
+      <h2 style="margin-top:20px">Tabla detallada</h2>
+      <div style="overflow-x:auto"><table id="tablaFlujo"></table></div>
+    </div>
+
+    <!-- ESCENARIOS -->
+    <div class="tab-content" id="escenarios">
+      <h2>Análisis de escenarios</h2>
+      <div class="info-box">
+        Comparamos tres escenarios variando el ahorro: <b>Optimista (+20%)</b>, <b>Base</b> y <b>Pesimista (-20%)</b>.
+      </div>
+      <div class="scenario-bar" id="escenariosBar"></div>
+      <canvas id="canvasEscenarios" width="900" height="380"></canvas>
+      <div class="legend">
+        <span style="color:#4ade80">Optimista</span>
+        <span style="color:#3b82f6">Base</span>
+        <span style="color:#ef4444">Pesimista</span>
+      </div>
+    </div>
+
+    <!-- SENSIBILIDAD -->
+    <div class="tab-content" id="sensibilidad">
+      <h2>Análisis de sensibilidad (Tornado)</h2>
+      <div class="info-box">
+        Mide cuánto varía el <b>VAN</b> al cambiar cada parámetro un ±20%. Las barras más largas indican mayor influencia.
+      </div>
+      <canvas id="canvasSens" width="900" height="420"></canvas>
+    </div>
+
+    <!-- LCOE -->
+    <div class="tab-content" id="lcoe">
+      <h2>LCOE a lo largo de la vida del proyecto</h2>
+      <canvas id="canvasLCOE" width="900" height="380"></canvas>
+      <div class="legend">
+        <span style="color:#4ade80">LCOE acumulado (€/MWh)</span>
+        <span style="color:#fbbf24">Precio referencia mercado</span>
+      </div>
+      <div class="info-box">
+        El <b>LCOE</b> (Levelized Cost of Energy) es el coste total actualizado dividido entre la energía total generada.
+        Si el LCOE &lt; precio mercado, el proyecto es competitivo.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   UTILIDADES Y CÁLCULOS
+========================= */
+const $ = id => document.getElementById(id);
+const fmtEur = v => (v||0).toLocaleString('es-ES',{maximumFractionDigits:0}) + ' €';
+const fmtEur2 = v => (v||0).toLocaleString('es-ES',{maximumFractionDigits:2}) + ' €';
+const fmtPct = v => (v||0).toFixed(2) + ' %';
+
+function getParams() {
+  return {
+    I: +$('inversion').value || 0,
+    A: +$('ahorro').value || 0,
+    OM: +$('om').value || 0,
+    n: +$('vida').value || 1,
+    r: (+$('tasa').value || 0)/100,
+    E: +$('energia').value || 0,
+    deg: (+$('degrad').value || 0)/100,
+    esc: (+$('escalado').value || 0)/100
+  };
+}
+
+/* Calcula flujo anual: año 0 = -I, años 1..n = ahorro*(1+esc)^t*(1-deg)^t - OM */
+function flujoAnual(p, factorAhorro = 1) {
+  const flujos = [-p.I];
+  for (let t = 1; t <= p.n; t++) {
+    const ahorro = p.A * factorAhorro * Math.pow(1 + p.esc, t) * Math.pow(1 - p.deg, t);
+    flujos.push(ahorro - p.OM);
+  }
+  return flujos;
+}
+
+function acumulado(flujos) {
+  const acc = [];
+  let s = 0;
+  for (const f of flujos) { s += f; acc.push(s); }
+  return acc;
+}
+
+function VAN(flujos, r) {
+  return flujos.reduce((acc, f, t) => acc + f / Math.pow(1 + r, t), 0);
+}
+
+/* TIR por bisección */
+function TIR(flujos) {
+  let lo = -0.99, hi = 5;
+  for (let i = 0; i < 200; i++) {
+    const mid = (lo + hi) / 2;
+    const v = VAN(flujos, mid);
+    if (v > 0) lo = mid; else hi = mid;
+    if (Math.abs(v) < 1e-6) break;
+  }
+  return (lo + hi) / 2;
+}
+
+function retornoSimple(I, flujoAnualBase) {
+  if (I <= 0) return 0;
+  let acc = -I;
+  for (let t = 1; t < flujoAnualBase.length; t++) {
+    const prev = acc;
+    acc += flujoAnualBase[t];
+    if (acc >= 0) {
+      // interpolación lineal
+      const frac = -prev / flujoAnualBase[t];
+      return t - 1 + frac;
+    }
+  }
+  return Infinity; // no recupera
+}
+
+function LCOE(flujos, energia, r) {
+  // LCOE = sum(C_t/(1+r)^t) / sum(E_t/(1+r)^t)
+  let num = 0, den = 0;
+  for (let t = 0; t < flujos.length; t++) {
+    const desc = Math.pow(1 + r, t);
+    num += flujos[t] / desc;
+    // Energía: año 0 = 0, año t >= 1
+    if (t > 0) {
+      const Et = energia * Math.pow(1 - (energia > 0 ? 0 : 0), 0); // placeholder
+      den += Et / desc;
+    }
+  }
+  return den > 0 ? num / den : 0;
+}
+
+function LCOECompleto(p) {
+  // Construye flujos de COSTE (inversión + OM) y de ENERGÍA
+  let num = p.I; // año 0
+  let den = 0;
+  for (let t = 1; t <= p.n; t++) {
+    const desc = Math.pow(1 + p.r, t);
+    num += p.OM / desc;
+    const Et = p.E * Math.pow(1 - p.deg, t);
+    den += Et / desc;
+  }
+  return den > 0 ? num / den : 0;
+}
+
+/* =========================
+   RENDERIZADO PRINCIPAL
+========================= */
+function calcular() {
+  const p = getParams();
+  const flujos = flujoAnual(p);
+  const acc = acumulado(flujos);
+  const van = VAN(flujos, p.r);
+  const tir = TIR(flujos);
+  const payback = retornoSimple(p.I, flujos);
+  const lcoe = LCOECompleto(p);
+  const ahorroNetoAnual = p.A - p.OM;
+
+  // KPIs
+  const kpis = $('kpis');
+  const paybackClass = payback === Infinity ? 'bad' : (payback <= p.n/2 ? 'good' : 'warn');
+  const vanClass = van > 0 ? 'good' : 'bad';
+  const tirClass = tir*100 > p.r*100 ? 'good' : 'bad';
+  kpis.innerHTML = `
+    <div class="kpi ${paybackClass}">
+      <div class="label">Retorno Simple</div>
+      <div class="value">${payback === Infinity ? '∞' : payback.toFixed(2) + ' años'}</div>
+    </div>
+    <div class="kpi ${vanClass}">
+      <div class="label">VAN</div>
+      <div class="value">${fmtEur(van)}</div>
+    </div>
+    <div class="kpi ${tirClass}">
+      <div class="label">TIR</div>
+      <div class="value">${isFinite(tir) ? fmtPct(tir*100) : 'N/D'}</div>
+    </div>
+    <div class="kpi">
+      <div class="label">LCOE</div>
+      <div class="value">${p.E > 0 ? lcoe.toFixed(2) + ' €/MWh' : 'N/D'}</div>
+    </div>
+    <div class="kpi ${ahorroNetoAnual <= 0 ? 'bad' : ''}">
+      <div class="label">Ahorro neto año 1</div>
+      <div class="value">${fmtEur(ahorroNetoAnual)}</div>
+    </div>
+    <div class="kpi">
+      <div class="label">Inversión</div>
+      <div class="value">${fmtEur(p.I)}</div>
+    </div>
+  `;
+
+  // Diagnóstico
+  const diag = $('diagnostico');
+  let msg = '';
+  if (p.A <= 0) {
+    msg = `<div class="info-box bad">⚠️ <b>Ahorro nulo o negativo.</b> El proyecto no genera beneficio directo; revisa los ingresos o subvenciones.</div>`;
+  } else if (ahorroNetoAnual <= 0) {
+    msg = `<div class="info-box warn">⚠️ El ahorro bruto no cubre los costes O&M. Revisa la dimensión del proyecto.</div>`;
+  } else if (payback === Infinity) {
+    msg = `<div class="info-box bad">❌ El proyecto <b>nunca recupera</b> la inversión en su vida útil.</div>`;
+  } else if (van < 0) {
+    msg = `<div class="info-box warn">⚠️ VAN negativo: el proyecto <b>destruye valor</b> a la tasa de descuento actual (${(p.r*100).toFixed(1)}%).</div>`;
+  } else {
+    msg = `<div class="info-box">✅ Proyecto viable: recupera la inversión en <b>${payback.toFixed(1)} años</b> y genera valor.</div>`;
+  }
+  diag.innerHTML = msg;
+
+  // Tabla flujo
+  const tabla = $('tablaFlujo');
+  let html = '<tr><th>Año</th><th>Flujo (€)</th><th>Acumulado (€)</th><th>Factor desc.</th><th>Flujo desc. (€)</th></tr>';
+  let vanAcc = 0;
+  for (let t = 0; t < flujos.length; t++) {
+    const fac = 1 / Math.pow(1 + p.r, t);
+    const fd = flujos[t] * fac;
+    vanAcc += fd;
+    html += `<tr><td>${t}</td><td>${fmtEur(flujos[t])}</td><td>${fmtEur(acc[t])}</td><td>${fac.toFixed(3)}</td><td>${fmtEur(fd)}</td></tr>`;
+  }
+  tabla.innerHTML = html;
+
+  // Gráfico flujo
+  dibujarFlujo(flujos, acc, payback);
+  dibujarEscenarios(p);
+  dibujarSensibilidad(p);
+  dibujarLCOE(p);
+}
+
+/* =========================
+   GRÁFICOS (Canvas puro)
+========================= */
+function limpiar(ctx, w, h) {
+  ctx.clearRect(0, 0, w, h);
+}
+
+function dibujarFlujo(flujos, acc, payback) {
+  const c = $('canvasFlujo');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  limpiar(ctx, W, H);
+  const pad = {l:70, r:30, t:30, b:50};
+  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
+
+  const n = flujos.length;
+  const maxF = Math.max(...flujos.map(Math.abs), 1);
+  const maxA = Math.max(...acc.map(Math.abs), 1);
+  const scale = Math.max(maxF, maxA);
+
+  // Ejes
+  ctx.strokeStyle = '#475569';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, pad.t + gh);
+  ctx.lineTo(pad.l + gw, pad.t + gh);
+  ctx.stroke();
+
+  // Línea cero
+  const y0 = pad.t + gh/2;
+  ctx.strokeStyle = '#64748b';
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.l, y0);
+  ctx.lineTo(pad.l + gw, y0);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Barras flujo anual
+  const bw = gw / n * 0.6;
+  for (let i = 0; i < n; i++) {
+    const x = pad.l + (i + 0.5) * gw / n - bw/2;
+    const hBar = (flujos[i] / scale) * (gh/2);
+    ctx.fillStyle = flujos[i] >= 0 ? '#4ade80' : '#ef4444';
+    ctx.fillRect(x, y0 - (flujos[i]>=0?hBar:0), bw, Math.abs(hBar));
+  }
+
+  // Línea acumulado
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (let i = 0; i < n; i++) {
+    const x = pad.l + (i + 0.5) * gw / n;
+    const y = y0 - (acc[i] / scale) * (gh/2);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Punto de retorno
+  if (isFinite(payback) && payback < n) {
+    const x = pad.l + (payback + 0.5) * gw / n;
+    ctx.strokeStyle = '#ef4444';
+    ctx.setLineDash([5,3]);
+    ctx.beginPath();
+    ctx.moveTo(x, pad.t);
+    ctx.lineTo(x, pad.t + gh);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#ef4444';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.fillText('Payback: ' + payback.toFixed(2) + ' años', x + 5, pad.t + 15);
+  }
+
+  // Etiquetas eje X
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  for (let i = 0; i < n; i++) {
+    if (i % Math.ceil(n/15) === 0) {
+      const x = pad.l + (i + 0.5) * gw / n;
+      ctx.fillText('Año ' + i, x, pad.t + gh + 18);
+    }
+  }
+
+  // Etiquetas eje Y
+  ctx.textAlign = 'right';
+  for (let i = -2; i <= 2; i++) {
+    const y = y0 - (i/2) * gh;
+    const val = (i/2) * scale;
+    ctx.fillText((val/1000).toFixed(0) + 'k€', pad.l - 8, y + 4);
+  }
+
+  // Título
+  ctx.fillStyle = '#f0f4f8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Flujo anual (barras) y acumulado (línea)', pad.l, pad.t - 10);
+}
+
+function dibujarEscenarios(p) {
+  const c = $('canvasEscenarios');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  limpiar(ctx, W, H);
+  const pad = {l:70, r:30, t:30, b:50};
+  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
+
+  const escenarios = [
+    {nombre:'Optimista', factor:1.2, color:'#4ade80'},
+    {nombre:'Base', factor:1.0, color:'#3b82f6'},
+    {nombre:'Pesimista', factor:0.8, color:'#ef4444'}
+  ];
+
+  // Barra de escenarios con KPIs
+  const bar = $('escenariosBar');
+  bar.innerHTML = '';
+  escenarios.forEach(e => {
+    const f = flujoAnual(p, e.factor);
+    const van = VAN(f, p.r);
+    const pay = retornoSimple(p.I, f);
+    const div = document.createElement('div');
+    div.className = 'scenario ' + (e.factor===1.2?'opt':e.factor===1?'base':'pes');
+    div.innerHTML = `<b>${e.nombre}</b><br>VAN: ${fmtEur(van)}<br>Payback: ${isFinite(pay)?pay.toFixed(2)+'a':'∞'}`;
+    bar.appendChild(div);
+  });
+
+  // Líneas acumuladas
+  const pad2 = {l:70, r:30, t:30, b:50};
+  const gw2 = W - pad2.l - pad2.r, gh2 = H - pad2.t - pad2.b;
+  let maxAbs = 1;
+  const series = escenarios.map(e => {
+    const f = flujoAnual(p, e.factor);
+    const a = acumulado(f);
+    maxAbs = Math.max(maxAbs, ...a.map(Math.abs));
+    return {...e, acc:a};
+  });
+
+  // Ejes
+  ctx.strokeStyle = '#475569';
+  ctx.beginPath();
+  ctx.moveTo(pad2.l, pad2.t);
+  ctx.lineTo(pad2.l, pad2.t + gh2);
+  ctx.lineTo(pad2.l + gw2, pad2.t + gh2);
+  ctx.stroke();
+
+  const y0 = pad2.t + gh2/2;
+  ctx.strokeStyle = '#64748b';
+  ctx.setLineDash([4,4]);
+  ctx.beginPath();
+  ctx.moveTo(pad2.l, y0);
+  ctx.lineTo(pad2.l + gw2, y0);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  series.forEach(s => {
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    for (let i = 0; i < s.acc.length; i++) {
+      const x = pad2.l + (i + 0.5) * gw2 / s.acc.length;
+      const y = y0 - (s.acc[i] / maxAbs) * (gh2/2);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+  });
+
+  // Etiquetas
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  const n = p.n + 1;
+  for (let i = 0; i < n; i++) {
+    if (i % Math.ceil(n/15) === 0) {
+      const x = pad2.l + (i + 0.5) * gw2 / n;
+      ctx.fillText('Año ' + i, x, pad2.t + gh2 + 18);
+    }
+  }
+  ctx.textAlign = 'right';
+  for (let i = -2; i <= 2; i++) {
+    const y = y0 - (i/2) * gh2;
+    const val = (i/2) * maxAbs;
+    ctx.fillText((val/1000).toFixed(0) + 'k€', pad2.l - 8, y + 4);
+  }
+  ctx.fillStyle = '#f0f4f8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Flujo acumulado por escenario', pad2.l, pad2.t - 10);
+}
+
+function dibujarSensibilidad(p) {
+  const c = $('canvasSens');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  limpiar(ctx, W, H);
+  const pad = {l:180, r:40, t:30, b:40};
+  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
+
+  const vanBase = VAN(flujoAnual(p), p.r);
+  const vars = [
+    {nombre:'Inversión', key:'I', delta: v => v*0.2},
+    {nombre:'Ahorro anual', key:'A', delta: v => v*0.2},
+    {nombre:'Coste O&M', key:'OM', delta: v => v*0.2},
+    {nombre:'Vida útil', key:'n', delta: v => Math.round(v*0.2)},
+    {nombre:'Tasa descuento', key:'r', delta: v => v*0.2},
+    {nombre:'Energía', key:'E', delta: v => v*0.2}
+  ];
+
+  const resultados = vars.map(v => {
+    const val = p[v.key];
+    const d = v.delta(val);
+    // +20%
+    const pUp = {...p, [v.key]: val + d};
+    const pDn = {...p, [v.key]: val - d};
+    const vanUp = VAN(flujoAnual(pUp), pUp.r);
+    const vanDn = VAN(flujoAnual(pDn), pDn.r);
+    return {...v, vanUp, vanDn, diff: Math.abs(vanUp - vanDn)};
+  }).sort((a,b) => b.diff - a.diff);
+
+  const maxDiff = Math.max(...resultados.map(r => r.diff), 1);
+
+  // Eje vertical central
+  const x0 = pad.l + gw/2;
+  ctx.strokeStyle = '#475569';
+  ctx.beginPath();
+  ctx.moveTo(x0, pad.t);
+  ctx.lineTo(x0, pad.t + gh);
+  ctx.stroke();
+
+  const barH = gh / resultados.length * 0.7;
+  const gap = gh / resultados.length;
+
+  resultados.forEach((r, i) => {
+    const y = pad.t + i * gap + (gap - barH)/2;
+    // barra negativa (pesimista)
+    const wDn = (Math.abs(r.vanDn - vanBase) / maxDiff) * (gw/2);
+    ctx.fillStyle = '#ef4444';
+    ctx.fillRect(x0 - wDn, y, wDn, barH);
+    // barra positiva (optimista)
+    const wUp = (Math.abs(r.vanUp - vanBase) / maxDiff) * (gw/2);
+    ctx.fillStyle = '#4ade80';
+    ctx.fillRect(x0, y, wUp, barH);
+
+    // etiqueta
+    ctx.fillStyle = '#f0f4f8';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(r.nombre, pad.l - 10, y + barH/2 + 4);
+  });
+
+  // Etiquetas eje X
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  for (let i = -2; i <= 2; i++) {
+    const x = x0 + (i/2) * gw/2;
+    const val = (i/2) * maxDiff;
+    ctx.fillText((val/1000).toFixed(1) + 'k€', x, pad.t + gh + 18);
+  }
+
+  ctx.fillStyle = '#f0f4f8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Impacto en VAN ante variación ±20% de cada parámetro', pad.l, pad.t - 10);
+
+  // Leyenda
+  ctx.font = '11px sans-serif';
+  ctx.fillStyle = '#4ade80';
+  ctx.textAlign = 'left';
+  ctx.fillText('■ Escenario favorable', pad.l, pad.t + gh + 35);
+  ctx.fillStyle = '#ef4444';
+  ctx.fillText('■ Escenario desfavorable', pad.l + 180, pad.t + gh + 35);
+}
+
+function dibujarLCOE(p) {
+  const c = $('canvasLCOE');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height;
+  limpiar(ctx, W, H);
+  const pad = {l:70, r:30, t:30, b:50};
+  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
+
+  if (p.E <= 0) {
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Introduce energía generada para calcular el LCOE', W/2, H/2);
+    return;
+  }
+
+  // LCOE acumulado año a año
+  const lcoes = [];
+  let num = p.I;
+  let den = 0;
+  lcoes.push(0);
+  for (let t = 1; t <= p.n; t++) {
+    const desc = Math.pow(1 + p.r, t);
+    num += p.OM / desc;
+    const Et = p.E * Math.pow(1 - p.deg, t);
+    den += Et / desc;
+    lcoes.push(den > 0 ? num / den : 0);
+  }
+
+  const maxL = Math.max(...lcoes, 1);
+  const minL = Math.min(...lcoes);
+
+  // Ejes
+  ctx.strokeStyle = '#475569';
+  ctx.beginPath();
+  ctx.moveTo(pad.l, pad.t);
+  ctx.lineTo(pad.l, pad.t + gh);
+  ctx.lineTo(pad.l + gw, pad.t + gh);
+  ctx.stroke();
+
+  // Línea LCOE
+  ctx.strokeStyle = '#4ade80';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  for (let i = 0; i < lcoes.length; i++) {
+    const x = pad.l + i * gw / (lcoes.length - 1);
+    const y = pad.t + gh - (lcoes[i] - minL*0.9) / (maxL - minL*0.9) * gh;
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Línea precio mercado (referencia: 80 €/MWh)
+  const precioRef = 80;
+  if (precioRef >= minL*0.9 && precioRef <= maxL*1.1) {
+    const yRef = pad.t + gh - (precioRef - minL*0.9) / (maxL - minL*0.9) * gh;
+    ctx.strokeStyle = '#fbbf24';
+    ctx.setLineDash([6,4]);
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(pad.l, yRef);
+    ctx.lineTo(pad.l + gw, yRef);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('Precio ref. mercado: ' + precioRef + ' €/MWh', pad.l + 5, yRef - 5);
+  }
+
+  // Etiquetas
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  for (let i = 0; i < lcoes.length; i++) {
+    if (i % Math.ceil(lcoes.length/15) === 0) {
+      const x = pad.l + i * gw / (lcoes.length - 1);
+      ctx.fillText('Año ' + i, x, pad.t + gh + 18);
+    }
+  }
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.t + gh - (i/4) * gh;
+    const val = minL*0.9 + (i/4) * (maxL - minL*0.9);
+    ctx.fillText(val.toFixed(1) + ' €/MWh', pad.l - 8, y + 4);
+  }
+  ctx.fillStyle = '#f0f4f8';
+  ctx.font = 'bold 13px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Evolución del LCOE acumulado', pad.l, pad.t - 10);
+}
+
+/* =========================
+   EVENTOS
+========================= */
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $(t.dataset.tab).classList.add('active');
+  });
+});
+
+// Sincronizar sliders con inputs
+['vida','tasa'].forEach(id => {
+  const sl = $(id), nm = $(id+'Num');
+  sl.addEventListener('input', () => { nm.value = sl.value; calcular(); });
+  nm.addEventListener('input', () => { sl.value = nm.value; calcular(); });
+});
+
+// Recalcular ante cualquier cambio
+document.querySelectorAll('input').forEach(i => i.addEventListener('input', calcular));
+
+// Inicio
+calcular();
+</script>
+
+</body>
+</html>
