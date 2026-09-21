@@ -1,897 +1,1206 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-CO">
 <head>
 <meta charset="UTF-8">
-<title>Evaluación Económica de Proyectos Energéticos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Evaluador de Proyectos Energéticos - Colombia</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', Tahoma, sans-serif;
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    color: #f0f4f8;
-    min-height: 100vh;
-    padding: 20px;
+  :root{
+    --primary:#00a86b; --secondary:#00d4aa; --accent:#ffd700;
+    --dark:#1a1a2e; --darker:#0f0f1e; --light:#e8f4f8;
+    --danger:#e74c3c; --warning:#f39c12; --info:#3498db;
+    --card:rgba(255,255,255,0.95); --shadow:0 8px 32px rgba(0,0,0,0.1);
   }
-  header {
-    text-align: center;
-    padding: 20px;
-    background: rgba(255,255,255,0.05);
-    border-radius: 12px;
-    margin-bottom: 20px;
-    border: 1px solid rgba(255,255,255,0.1);
+  body{
+    font-family:'Segoe UI',system-ui,sans-serif;
+    background:linear-gradient(135deg,var(--darker),var(--dark),#16213e);
+    color:#2c3e50; min-height:100vh; padding:20px;
+    background-attachment:fixed;
   }
-  header h1 { font-size: 1.8em; color: #4ade80; }
-  header p { color: #cbd5e1; margin-top: 6px; }
-  .container {
-    display: grid;
-    grid-template-columns: 380px 1fr;
-    gap: 20px;
-    max-width: 1500px;
-    margin: auto;
+  .container{max-width:1400px; margin:0 auto;}
+  
+  /* HEADER */
+  header{
+    text-align:center; padding:40px 20px; margin-bottom:30px;
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    border-radius:20px; color:white;
+    box-shadow:var(--shadow);
+    position:relative; overflow:hidden;
   }
-  @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
-  .panel {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 18px;
-    backdrop-filter: blur(10px);
+  header::before{
+    content:"☀️"; position:absolute; font-size:150px;
+    opacity:0.1; top:-20px; right:-20px;
   }
-  .panel h2 {
-    color: #4ade80;
-    margin-bottom: 12px;
-    border-bottom: 2px solid #4ade80;
-    padding-bottom: 6px;
-    font-size: 1.1em;
+  header h1{font-size:2.5rem; margin-bottom:10px; text-shadow:2px 2px 4px rgba(0,0,0,0.2);}
+  header p{font-size:1.1rem; opacity:0.95; max-width:700px; margin:0 auto;}
+  .flag{font-size:2rem; margin:10px;}
+  
+  /* CARDS */
+  .card{
+    background:var(--card); border-radius:16px; padding:25px;
+    margin-bottom:25px; box-shadow:var(--shadow);
+    transition:transform 0.3s;
   }
-  .input-group { margin-bottom: 14px; }
-  .input-group label {
-    display: block;
-    font-size: 0.85em;
-    color: #cbd5e1;
-    margin-bottom: 4px;
+  .card:hover{transform:translateY(-3px);}
+  .card h2{
+    color:var(--dark); margin-bottom:20px; display:flex; align-items:center; gap:10px;
+    font-size:1.4rem; border-bottom:3px solid var(--primary); padding-bottom:10px;
   }
-  .input-group .row {
-    display: flex;
-    gap: 8px;
-    align-items: center;
+  .icon{font-size:1.8rem;}
+  
+  /* GRID */
+  .grid{display:grid; gap:25px;}
+  .grid-2{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+  
+  /* INPUTS */
+  .input-group{margin-bottom:15px;}
+  label{
+    display:block; font-weight:600; color:var(--dark); margin-bottom:5px;
+    font-size:0.9rem;
   }
-  input[type="number"], input[type="range"] {
-    width: 100%;
-    padding: 6px 10px;
-    border-radius: 6px;
-    border: 1px solid #475569;
-    background: rgba(0,0,0,0.3);
-    color: #f0f4f8;
-    font-size: 0.95em;
+  .input-wrapper{
+    display:flex; align-items:center; gap:10px;
+    background:#f8f9fa; border:2px solid #dee2e6;
+    border-radius:10px; padding:10px; transition:border-color 0.3s;
   }
-  input[type="range"] { padding: 0; }
-  .hint {
-    font-size: 0.75em;
-    color: #94a3b8;
-    font-style: italic;
-    margin-top: 2px;
+  .input-wrapper:focus-within{border-color:var(--primary);}
+  .input-wrapper input{
+    flex:1; border:none; background:transparent; font-size:1rem;
+    color:var(--dark); font-weight:600;
   }
-  .tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 14px;
+  .input-wrapper input:focus{outline:none;}
+  .unit{color:var(--primary); font-weight:700; white-space:nowrap;}
+  .hint{font-size:0.8rem; color:#6c757d; margin-top:3px;}
+  
+  /* SLIDER */
+  .slider-container{margin:15px 0;}
+  .slider-label{display:flex; justify-content:space-between; margin-bottom:5px;}
+  input[type=range]{
+    width:100%; height:8px; border-radius:5px;
+    background:#dee2e6; outline:none;
+    -webkit-appearance:none;
   }
-  .tab {
-    padding: 8px 14px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: all 0.2s;
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:22px; height:22px;
+    border-radius:50%; background:var(--primary); cursor:pointer;
+    box-shadow:0 2px 6px rgba(0,0,0,0.2);
   }
-  .tab.active {
-    background: #4ade80;
-    color: #0f2027;
-    font-weight: bold;
+  .slider-value{
+    background:var(--primary); color:white; padding:3px 10px;
+    border-radius:15px; font-weight:700; font-size:0.9rem;
   }
-  .tab-content { display: none; }
-  .tab-content.active { display: block; }
-  .kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 12px;
-    margin-bottom: 18px;
+  
+  /* SCENARIOS */
+  .scenarios{display:flex; gap:10px; margin:20px 0; flex-wrap:wrap;}
+  .scenario-btn{
+    flex:1; min-width:120px; padding:15px; border:2px solid #dee2e6;
+    border-radius:12px; background:white; cursor:pointer;
+    transition:all 0.3s; text-align:center;
   }
-  .kpi {
-    background: rgba(74, 222, 128, 0.08);
-    border: 1px solid rgba(74, 222, 128, 0.3);
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
+  .scenario-btn:hover{border-color:var(--secondary); transform:scale(1.02);}
+  .scenario-btn.active{
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    color:white; border-color:transparent;
   }
-  .kpi .label { font-size: 0.75em; color: #94a3b8; text-transform: uppercase; }
-  .kpi .value { font-size: 1.4em; font-weight: bold; color: #4ade80; margin-top: 4px; }
-  .kpi.warn .value { color: #fbbf24; }
-  .kpi.bad .value { color: #ef4444; }
-  .kpi.good .value { color: #4ade80; }
-  canvas {
-    width: 100%;
-    background: rgba(0,0,0,0.25);
-    border-radius: 10px;
-    margin-top: 10px;
+  .scenario-icon{font-size:2rem; margin-bottom:5px;}
+  .scenario-name{font-weight:700;}
+  .scenario-desc{font-size:0.75rem; opacity:0.8;}
+  
+  /* BUTTONS */
+  .btn{
+    width:100%; padding:15px; border:none; border-radius:12px;
+    font-size:1.1rem; font-weight:700; cursor:pointer;
+    transition:all 0.3s; margin-top:10px;
   }
-  .info-box {
-    background: rgba(59, 130, 246, 0.1);
-    border-left: 4px solid #3b82f6;
-    padding: 10px 14px;
-    border-radius: 6px;
-    margin: 10px 0;
-    font-size: 0.88em;
-    line-height: 1.5;
+  .btn-primary{
+    background:linear-gradient(135deg,var(--primary),var(--secondary));
+    color:white; box-shadow:0 4px 15px rgba(0,168,107,0.4);
   }
-  .info-box.warn {
-    background: rgba(251, 191, 36, 0.1);
-    border-left-color: #fbbf24;
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,168,107,0.6);}
+  .btn-secondary{
+    background:#6c757d; color:white; margin-top:10px;
   }
-  .info-box.bad {
-    background: rgba(239, 68, 68, 0.1);
-    border-left-color: #ef4444;
+  .btn-secondary:hover{background:#5a6268;}
+  
+  /* KPIS */
+  .kpi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:15px;}
+  .kpi-card{
+    background:linear-gradient(135deg,#f8f9fa,#e9ecef);
+    border-radius:12px; padding:20px; text-align:center;
+    border-left:5px solid var(--primary);
+    transition:transform 0.3s;
   }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85em;
-    margin-top: 10px;
+  .kpi-card:hover{transform:scale(1.03);}
+  .kpi-card.warning{border-left-color:var(--warning);}
+  .kpi-card.danger{border-left-color:var(--danger);}
+  .kpi-card.success{border-left-color:var(--primary);}
+  .kpi-label{font-size:0.85rem; color:#6c757d; margin-bottom:8px; text-transform:uppercase;}
+  .kpi-value{font-size:1.8rem; font-weight:800; color:var(--dark); margin-bottom:5px;}
+  .kpi-sub{font-size:0.8rem; color:#6c757d;}
+  
+  /* ALERTS */
+  .alert{
+    padding:15px 20px; border-radius:10px; margin-bottom:20px;
+    display:flex; align-items:start; gap:15px;
+    animation:slideIn 0.5s ease;
   }
-  th, td {
-    padding: 6px 8px;
-    text-align: right;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+  @keyframes slideIn{
+    from{opacity:0; transform:translateY(-20px);}
+    to{opacity:1; transform:translateY(0);}
   }
-  th { background: rgba(74, 222, 128, 0.15); color: #4ade80; text-align: center; }
-  td:first-child { text-align: center; }
-  .scenario-bar {
-    display: flex;
-    gap: 10px;
-    margin: 10px 0;
+  .alert-icon{font-size:1.5rem;}
+  .alert-content h4{margin-bottom:5px;}
+  .alert-content p{font-size:0.9rem;}
+  .alert-success{background:#d4edda; border-left:5px solid #28a745; color:#155724;}
+  .alert-warning{background:#fff3cd; border-left:5px solid var(--warning); color:#856404;}
+  .alert-danger{background:#f8d7da; border-left:5px solid var(--danger); color:#721c24;}
+  .alert-info{background:#d1ecf1; border-left:5px solid var(--info); color:#0c5460;}
+  
+  /* TABLE */
+  .table-container{overflow-x:auto; margin:20px 0;}
+  table{width:100%; border-collapse:collapse; font-size:0.9rem;}
+  th,td{padding:12px; text-align:right; border-bottom:1px solid #dee2e6;}
+  th{background:var(--primary); color:white; text-align:center; font-weight:600;}
+  th:first-child,td:first-child{text-align:center;}
+  tr:hover{background:#f8f9fa;}
+  .negative{color:var(--danger); font-weight:600;}
+  .positive{color:var(--primary); font-weight:600;}
+  
+  /* CHARTS */
+  .chart-box{
+    background:white; border-radius:12px; padding:20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.05);
   }
-  .scenario {
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 0.85em;
+  .chart-title{font-size:1.1rem; font-weight:600; margin-bottom:15px; color:var(--dark);}
+  
+  /* INSTRUCTIONS */
+  .instruction-box{
+    background:linear-gradient(135deg,#fff9e6,#fff3cd);
+    border:2px solid var(--accent); border-radius:12px;
+    padding:20px; margin:20px 0;
   }
-  .scenario.base { background: rgba(59,130,246,0.15); border: 1px solid #3b82f6; }
-  .scenario.opt { background: rgba(74,222,128,0.15); border: 1px solid #4ade80; }
-  .scenario.pes { background: rgba(239,68,68,0.15); border: 1px solid #ef4444; }
-  .legend {
-    display: flex;
-    gap: 15px;
-    justify-content: center;
-    font-size: 0.8em;
-    margin-top: 6px;
-    color: #cbd5e1;
+  .instruction-box h3{color:#856404; margin-bottom:10px; display:flex; align-items:center; gap:10px;}
+  .instruction-box ol{margin-left:20px; color:#856404;}
+  .instruction-box li{margin:8px 0;}
+  
+  /* FORMULAS */
+  .formula-box{
+    background:#f8f9fa; border-left:4px solid var(--info);
+    padding:15px; margin:10px 0; border-radius:8px;
+    font-family:'Courier New',monospace; font-size:0.9rem;
   }
-  .legend span::before {
-    content: "■ ";
-    font-weight: bold;
+  .formula-title{font-weight:700; color:var(--info); margin-bottom:8px;}
+  
+  /* TOOLTIP */
+  .tooltip{
+    display:inline-block; width:18px; height:18px;
+    background:var(--info); color:white; border-radius:50%;
+    text-align:center; line-height:18px; font-size:0.75rem;
+    cursor:help; margin-left:5px; position:relative;
+  }
+  .tooltip:hover::after{
+    content:attr(data-tip); position:absolute; bottom:125%; left:50%;
+    transform:translateX(-50%); background:var(--dark);
+    color:white; padding:8px 12px; border-radius:8px;
+    font-size:0.8rem; width:250px; text-align:left;
+    z-index:1000; font-family:system-ui;
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  }
+  
+  /* LOADING */
+  .loading{
+    display:none; text-align:center; padding:40px;
+  }
+  .loading.active{display:block;}
+  .spinner{
+    width:50px; height:50px; border:5px solid #f3f3f3;
+    border-top:5px solid var(--primary); border-radius:50%;
+    animation:spin 1s linear infinite; margin:0 auto 20px;
+  }
+  @keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
+  
+  /* ERROR */
+  .error-message{
+    background:#f8d7da; color:#721c24; padding:15px;
+    border-radius:8px; margin:10px 0; display:none;
+  }
+  .error-message.show{display:block;}
+  
+  /* FOOTER */
+  footer{
+    text-align:center; padding:30px; color:rgba(255,255,255,0.7);
+    font-size:0.9rem;
+  }
+  
+  /* IMAGES PLACEHOLDER */
+  .illustration{
+    text-align:center; margin:20px 0;
+  }
+  .illustration img{
+    max-width:100%; height:auto; border-radius:12px;
+    box-shadow:var(--shadow);
+  }
+  
+  @media print{
+    .no-print{display:none;}
+    body{background:white;}
+    .card{break-inside:avoid;}
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>🌱 Evaluación Económica de Proyectos Energéticos</h1>
-  <p>Calcula inversión, ahorro, retorno, VAN, TIR y LCOE · App 100% offline</p>
-</header>
-
 <div class="container">
 
-  <!-- PANEL DE ENTRADAS -->
-  <div class="panel">
-    <h2>📊 Parámetros del Proyecto</h2>
+<!-- HEADER -->
+<header>
+  <div class="flag">🇨🇴</div>
+  <h1>⚡ Evaluador de Proyectos Energéticos</h1>
+  <p>Calcula la viabilidad económica de tus proyectos de energía renovable en Colombia. Incluye VAN, TIR, LCOE y análisis de sensibilidad.</p>
+</header>
 
-    <div class="input-group">
-      <label>Inversión inicial (€)</label>
-      <input type="number" id="inversion" value="50000" min="0" step="1000">
-      <div class="hint">Coste total de instalación y puesta en marcha.</div>
+<!-- INSTRUCCIONES -->
+<div class="instruction-box">
+  <h3>📖 ¿Cómo usar esta herramienta?</h3>
+  <ol>
+    <li><strong>Ingresa los datos</strong> de tu proyecto (inversión, generación, costos)</li>
+    <li><strong>Selecciona un escenario</strong> (Conservador, Base u Optimista)</li>
+    <li><strong>Presiona "Calcular Proyecto"</strong> para ver los resultados</li>
+    <li><strong>Analiza los indicadores</strong> y gráficos generados</li>
+    <li><strong>Compara escenarios</strong> para evaluar riesgos</li>
+  </ol>
+</div>
+
+<div class="grid grid-2">
+
+<!-- DATOS DEL PROYECTO -->
+<div class="card">
+  <h2><span class="icon">🏗️</span> Datos del Proyecto</h2>
+  
+  <div class="input-group">
+    <label>Inversión Inicial Total <span class="tooltip" data-tip="Suma de equipos, instalación, obra civil, trámites y conexión a red">?</span></label>
+    <div class="input-wrapper">
+      <input type="number" id="inversion" value="50000000" min="0" step="1000000">
+      <span class="unit">COP</span>
     </div>
+    <div class="hint">Ej: $50.000.000 para un sistema solar residencial</div>
+  </div>
 
-    <div class="input-group">
-      <label>Ahorro anual esperado (€/año)</label>
-      <input type="number" id="ahorro" value="6000" min="-5000" step="100">
-      <div class="hint">Puede ser negativo si el proyecto genera costes netos.</div>
-    </div>
-
-    <div class="input-group">
-      <label>Coste O&M anual (€/año)</label>
-      <input type="number" id="om" value="500" min="0" step="50">
-      <div class="hint">Operación y mantenimiento recurrentes.</div>
-    </div>
-
-    <div class="input-group">
-      <label>Vida útil del proyecto (años)</label>
-      <input type="range" id="vida" min="1" max="40" value="20">
-      <div class="row">
-        <input type="number" id="vidaNum" value="20" min="1" max="40">
-      </div>
-    </div>
-
-    <div class="input-group">
-      <label>Tasa de descuento (% anual)</label>
-      <input type="range" id="tasa" min="0" max="20" step="0.1" value="5">
-      <div class="row">
-        <input type="number" id="tasaNum" value="5" min="0" max="20" step="0.1">
-      </div>
-    </div>
-
-    <div class="input-group">
-      <label>Energía generada anual (MWh)</label>
-      <input type="number" id="energia" value="80" min="0" step="1">
-      <div class="hint">Para calcular el LCOE (€/MWh).</div>
-    </div>
-
-    <div class="input-group">
-      <label>Degradación anual de la generación (%)</label>
-      <input type="number" id="degrad" value="0.5" min="0" max="10" step="0.1">
-      <div class="hint">Pérdida típica en paneles solares ~0.5%/año.</div>
-    </div>
-
-    <div class="input-group">
-      <label>Escalado del precio energía (%/año)</label>
-      <input type="number" id="escalado" value="2" min="-5" max="15" step="0.1">
-      <div class="hint">Incremento esperado del precio de la electricidad.</div>
-    </div>
-
-    <div class="info-box">
-      💡 <b>Tip:</b> Modifica los valores y los resultados se recalculan al instante.
-      Prueba con ahorro negativo para ver cómo el sistema te avisa.
+  <div class="input-group">
+    <label>Vida Útil del Proyecto <span class="tooltip" data-tip="Años que operará el sistema. Paneles solares típicamente 25 años">?</span></label>
+    <div class="input-wrapper">
+      <input type="number" id="vida" value="25" min="1" max="40">
+      <span class="unit">años</span>
     </div>
   </div>
 
-  <!-- PANEL DE RESULTADOS -->
-  <div class="panel">
-    <div class="tabs">
-      <div class="tab active" data-tab="resumen">📋 Resumen</div>
-      <div class="tab" data-tab="flujo">💰 Flujo de Caja</div>
-      <div class="tab" data-tab="escenarios">🎯 Escenarios</div>
-      <div class="tab" data-tab="sensibilidad">📈 Sensibilidad</div>
-      <div class="tab" data-tab="lcoe">⚡ LCOE</div>
+  <div class="input-group">
+    <label>Generación Anual Esperada <span class="tooltip" data-tip="Energía que producirá el sistema por año en kWh. Depende de la ubicación y tecnología">?</span></label>
+    <div class="input-wrapper">
+      <input type="number" id="generacion" value="12000" min="0" step="100">
+      <span class="unit">kWh/año</span>
     </div>
+    <div class="hint">Ej: Sistema de 10 kW en Bogotá genera ~12,000 kWh/año</div>
+  </div>
 
-    <!-- RESUMEN -->
-    <div class="tab-content active" id="resumen">
-      <h2>Indicadores clave</h2>
-      <div class="kpi-grid" id="kpis"></div>
-      <div id="diagnostico"></div>
-      <div class="info-box">
-        <b>📘 Interpretación rápida:</b><br>
-        • <b>Retorno simple:</b> años para recuperar la inversión con ahorro constante.<br>
-        • <b>VAN:</b> valor actual de todos los flujos. Si es &gt; 0, el proyecto crea valor.<br>
-        • <b>TIR:</b> rentabilidad interna. Debe superar la tasa de descuento.<br>
-        • <b>LCOE:</b> coste nivelado de la energía (€/MWh). Compáralo con el precio de mercado.
-      </div>
+  <div class="slider-container">
+    <div class="slider-label">
+      <label>Degradación Anual del Sistema</label>
+      <span class="slider-value" id="degradVal">0.5%</span>
     </div>
+    <input type="range" id="degradacion" min="0" max="2" step="0.1" value="0.5">
+    <div class="hint">Los paneles solares pierden ~0.5% de eficiencia por año</div>
+  </div>
 
-    <!-- FLUJO DE CAJA -->
-    <div class="tab-content" id="flujo">
-      <h2>Flujo de caja anual y acumulado</h2>
-      <canvas id="canvasFlujo" width="900" height="380"></canvas>
-      <div class="legend">
-        <span style="color:#4ade80">Flujo anual</span>
-        <span style="color:#fbbf24">Acumulado</span>
-        <span style="color:#ef4444">Punto de retorno</span>
-      </div>
-      <h2 style="margin-top:20px">Tabla detallada</h2>
-      <div style="overflow-x:auto"><table id="tablaFlujo"></table></div>
+  <div class="input-group">
+    <label>Precio Actual de la Energía <span class="tooltip" data-tip="Cuánto pagas actualmente por kWh a tu proveedor de energía">?</span></label>
+    <div class="input-wrapper">
+      <input type="number" id="precioEnergia" value="650" min="0" step="10">
+      <span class="unit">COP/kWh</span>
     </div>
+    <div class="hint">Promedio residencial Colombia: $600-$800/kWh</div>
+  </div>
 
-    <!-- ESCENARIOS -->
-    <div class="tab-content" id="escenarios">
-      <h2>Análisis de escenarios</h2>
-      <div class="info-box">
-        Comparamos tres escenarios variando el ahorro: <b>Optimista (+20%)</b>, <b>Base</b> y <b>Pesimista (-20%)</b>.
-      </div>
-      <div class="scenario-bar" id="escenariosBar"></div>
-      <canvas id="canvasEscenarios" width="900" height="380"></canvas>
-      <div class="legend">
-        <span style="color:#4ade80">Optimista</span>
-        <span style="color:#3b82f6">Base</span>
-        <span style="color:#ef4444">Pesimista</span>
-      </div>
+  <div class="slider-container">
+    <div class="slider-label">
+      <label>Inflación Anual de la Energía</label>
+      <span class="slider-value" id="inflVal">4.5%</span>
     </div>
+    <input type="range" id="inflacion" min="0" max="15" step="0.5" value="4.5">
+    <div class="hint">Histórico Colombia: 3-6% anual</div>
+  </div>
+</div>
 
-    <!-- SENSIBILIDAD -->
-    <div class="tab-content" id="sensibilidad">
-      <h2>Análisis de sensibilidad (Tornado)</h2>
-      <div class="info-box">
-        Mide cuánto varía el <b>VAN</b> al cambiar cada parámetro un ±20%. Las barras más largas indican mayor influencia.
-      </div>
-      <canvas id="canvasSens" width="900" height="420"></canvas>
+<!-- COSTOS Y FINANCIAMIENTO -->
+<div class="card">
+  <h2><span class="icon">💰</span> Costos y Financiamiento</h2>
+  
+  <div class="input-group">
+    <label>Costos Anuales de O&M <span class="tooltip" data-tip="Operación y mantenimiento: limpieza, seguros, monitoreo, reparaciones menores">?</span></label>
+    <div class="input-wrapper">
+      <input type="number" id="om" value="500000" min="0" step="50000">
+      <span class="unit">COP/año</span>
     </div>
+    <div class="hint">Típicamente 1-2% de la inversión inicial</div>
+  </div>
 
-    <!-- LCOE -->
-    <div class="tab-content" id="lcoe">
-      <h2>LCOE a lo largo de la vida del proyecto</h2>
-      <canvas id="canvasLCOE" width="900" height="380"></canvas>
-      <div class="legend">
-        <span style="color:#4ade80">LCOE acumulado (€/MWh)</span>
-        <span style="color:#fbbf24">Precio referencia mercado</span>
-      </div>
-      <div class="info-box">
-        El <b>LCOE</b> (Levelized Cost of Energy) es el coste total actualizado dividido entre la energía total generada.
-        Si el LCOE &lt; precio mercado, el proyecto es competitivo.
-      </div>
+  <div class="input-group">
+    <label>Reemplazo de Inversor <span class="tooltip" data-tip="Costo de reemplazar el inversor (vida útil ~10-15 años)">?</span></label>
+    <div class="input-wrapper">
+      <input type="number" id="reemplazo" value="8000000" min="0" step="500000">
+      <span class="unit">COP</span>
+    </div>
+  </div>
+
+  <div class="input-group">
+    <label>Año del Reemplazo</label>
+    <div class="input-wrapper">
+      <input type="number" id="anioReemplazo" value="12" min="1" max="40">
+      <span class="unit">año</span>
+    </div>
+  </div>
+
+  <div class="slider-container">
+    <div class="slider-label">
+      <label>Tasa de Descuento (WACC) <span class="tooltip" data-tip="Tasa mínima de retorno esperada. Refleja el costo de oportunidad del capital">?</span></label>
+      <span class="slider-value" id="tasaVal">12%</span>
+    </div>
+    <input type="range" id="tasaDescuento" min="5" max="25" step="0.5" value="12">
+    <div class="hint">Proyectos energéticos Colombia: 10-15% típico</div>
+  </div>
+
+  <!-- ESCENARIOS -->
+  <h3 style="margin:25px 0 15px; color:var(--dark);">🎯 Escenario a Evaluar</h3>
+  <div class="scenarios">
+    <div class="scenario-btn" onclick="setScenario('conservador', this)">
+      <div class="scenario-icon">😟</div>
+      <div class="scenario-name">Conservador</div>
+      <div class="scenario-desc">-20% generación<br>+2% inflación</div>
+    </div>
+    <div class="scenario-btn active" onclick="setScenario('base', this)">
+      <div class="scenario-icon">📊</div>
+      <div class="scenario-name">Base</div>
+      <div class="scenario-desc">Valores normales<br>Proyección realista</div>
+    </div>
+    <div class="scenario-btn" onclick="setScenario('optimista', this)">
+      <div class="scenario-icon">🚀</div>
+      <div class="scenario-name">Optimista</div>
+      <div class="scenario-desc">+20% generación<br>+2% inflación</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" onclick="calcularProyecto()">
+    ⚡ Calcular Proyecto
+  </button>
+  <button class="btn btn-secondary" onclick="cargarEjemplo()">
+    📋 Cargar Ejemplo Completo
+  </button>
+  
+  <div id="errorMsg" class="error-message"></div>
+</div>
+
+</div>
+
+<!-- ALERTAS -->
+<div id="alertas"></div>
+
+<!-- INDICADORES CLAVE -->
+<h2 style="color:white; margin:30px 0 20px; display:flex; align-items:center; gap:10px;">
+  <span style="font-size:2rem;">📊</span> Indicadores Clave de Rentabilidad
+</h2>
+<div class="kpi-grid" id="kpis">
+  <div class="kpi-card">
+    <div class="kpi-label">Inversión Total</div>
+    <div class="kpi-value" style="color:var(--dark);">$50M</div>
+    <div class="kpi-sub">Capital inicial requerido</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Periodo de Retorno</div>
+    <div class="kpi-value" style="color:var(--warning);">--</div>
+    <div class="kpi-sub">Años para recuperar inversión</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">VAN (Valor Actual Neto)</div>
+    <div class="kpi-value" style="color:var(--dark);">$0</div>
+    <div class="kpi-sub">Valor creado en pesos de hoy</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">TIR (Tasa Interna)</div>
+    <div class="kpi-value" style="color:var(--dark);">--</div>
+    <div class="kpi-sub">Rentabilidad del proyecto</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">LCOE</div>
+    <div class="kpi-value" style="color:var(--dark);">$0</div>
+    <div class="kpi-sub">Costo por kWh generado</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-label">Ahorro Año 1</div>
+    <div class="kpi-value" style="color:var(--primary);">$0</div>
+    <div class="kpi-sub">Primer año de operación</div>
+  </div>
+</div>
+
+<!-- FLUJO DE CAJA -->
+<h2 style="color:white; margin:30px 0 20px; display:flex; align-items:center; gap:10px;">
+  <span style="font-size:2rem;">💵</span> Flujo de Caja Anual Detallado
+</h2>
+<div class="card">
+  <div class="table-container">
+    <table id="tablaFlujo">
+      <thead>
+        <tr>
+          <th>Año</th>
+          <th>Generación<br>(kWh)</th>
+          <th>Precio<br>(COP/kWh)</th>
+          <th>Ingreso<br>(COP)</th>
+          <th>Costos<br>(COP)</th>
+          <th>Flujo Neto<br>(COP)</th>
+          <th>Flujo Acum.<br>(COP)</th>
+          <th>Valor Presente<br>(COP)</th>
+        </tr>
+      </thead>
+      <tbody id="tablaBody">
+        <tr><td colspan="8" style="text-align:center; padding:40px; color:#6c757d;">
+          👆 Presiona "Calcular Proyecto" para ver los resultados
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GRÁFICOS -->
+<h2 style="color:white; margin:30px 0 20px; display:flex; align-items:center; gap:10px;">
+  <span style="font-size:2rem;">📈</span> Visualizaciones del Proyecto
+</h2>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="chart-box">
+      <div class="chart-title"> Flujo de Caja Acumulado vs VAN</div>
+      <canvas id="chartAcum"></canvas>
+    </div>
+    <div class="instruction-box" style="margin-top:15px; font-size:0.9rem;">
+      <strong>💡 Interpretación:</strong> La línea azul muestra el acumulado simple (sin descontar). 
+      La línea punteada verde muestra el VAN (valor presente). El punto donde cruzan cero es el 
+      periodo de retorno.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chart-box">
+      <div class="chart-title"> Ingresos vs Costos por Año</div>
+      <canvas id="chartBarras"></canvas>
+    </div>
+    <div class="instruction-box" style="margin-top:15px; font-size:0.9rem;">
+      <strong>💡 Interpretación:</strong> Las barras verdes son los ahorros generados, 
+      las rojas son los costos de operación. El proyecto es viable cuando los ingresos 
+      superan consistentemente los costos.
     </div>
   </div>
 </div>
 
+<div class="grid grid-2">
+  <div class="card">
+    <div class="chart-box">
+      <div class="chart-title">🎚️ Análisis de Sensibilidad del VAN</div>
+      <canvas id="chartSens"></canvas>
+    </div>
+    <div class="instruction-box" style="margin-top:15px; font-size:0.9rem;">
+      <strong>💡 Interpretación:</strong> Muestra cómo cambia el VAN si cada variable 
+      varía ±20%. La variable con mayor impacto es la más crítica del proyecto.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="chart-box">
+      <div class="chart-title">🎯 Comparación de Escenarios</div>
+      <canvas id="chartEsc"></canvas>
+    </div>
+    <div class="instruction-box" style="margin-top:15px; font-size:0.9rem;">
+      <strong>💡 Interpretación:</strong> Compara los KPIs principales entre escenarios. 
+      Un proyecto robusto debe ser viable incluso en el escenario conservador.
+    </div>
+  </div>
+</div>
+
+<!-- FÓRMULAS -->
+<h2 style="color:white; margin:30px 0 20px; display:flex; align-items:center; gap:10px;">
+  <span style="font-size:2rem;">📚</span> Fórmulas y Conceptos
+</h2>
+<div class="card">
+  <div class="formula-box">
+    <div class="formula-title">📍 Periodo de Retorno (Payback)</div>
+    Años que tarda en recuperarse la inversión con los ahorros generados.<br>
+    <strong>Fórmula:</strong> Payback = Inversión / Ahorro Anual Promedio
+  </div>
+  
+  <div class="formula-box">
+    <div class="formula-title"> Valor Actual Neto (VAN)</div>
+    Suma de todos los flujos futuros traídos a valor presente usando la tasa de descuento.<br>
+    <strong>Fórmula:</strong> VAN = -I₀ + Σ [(Flujo_t) / (1+r)^t]<br>
+    <strong>Interpretación:</strong> VAN > 0 → El proyecto crea valor
+  </div>
+  
+  <div class="formula-box">
+    <div class="formula-title">📈 Tasa Interna de Retorno (TIR)</div>
+    Tasa de descuento que hace que el VAN sea igual a cero.<br>
+    <strong>Interpretación:</strong> TIR > Tasa de descuento → Proyecto rentable
+  </div>
+  
+  <div class="formula-box">
+    <div class="formula-title">⚡ Costo Nivelado de Energía (LCOE)</div>
+    Costo promedio por kWh generado durante toda la vida del proyecto.<br>
+    <strong>Fórmula:</strong> LCOE = Costos Totales VP / Energía Total VP<br>
+    <strong>Interpretación:</strong> LCOE < Precio de red → Competitivo
+  </div>
+</div>
+
+<footer>
+  <p>🇴 Herramienta desarrollada para evaluación de proyectos energéticos en Colombia</p>
+  <p style="margin-top:10px; font-size:0.85rem;">
+    Basado en metodologías de la UPME y estándares internacionales de evaluación de proyectos
+  </p>
+</footer>
+
+</div>
+
 <script>
-/* =========================
-   UTILIDADES Y CÁLCULOS
-========================= */
-const $ = id => document.getElementById(id);
-const fmtEur = v => (v||0).toLocaleString('es-ES',{maximumFractionDigits:0}) + ' €';
-const fmtEur2 = v => (v||0).toLocaleString('es-ES',{maximumFractionDigits:2}) + ' €';
-const fmtPct = v => (v||0).toFixed(2) + ' %';
+// ============ VARIABLES GLOBALES ============
+let currentScenario = 'base';
+let scenarioParams = {
+  conservador: {mult: 0.8, infl: 6.5},
+  base: {mult: 1.0, infl: 4.5},
+  optimista: {mult: 1.2, infl: 6.5}
+};
 
-function getParams() {
-  return {
-    I: +$('inversion').value || 0,
-    A: +$('ahorro').value || 0,
-    OM: +$('om').value || 0,
-    n: +$('vida').value || 1,
-    r: (+$('tasa').value || 0)/100,
-    E: +$('energia').value || 0,
-    deg: (+$('degrad').value || 0)/100,
-    esc: (+$('escalado').value || 0)/100
-  };
+let charts = {};
+
+// ============ INICIALIZACIÓN ============
+document.addEventListener('DOMContentLoaded', function() {
+  // Configurar sliders
+  setupSliders();
+  
+  // Calcular inicialmente
+  calcularProyecto();
+});
+
+function setupSliders() {
+  const sliders = [
+    {id: 'degradacion', display: 'degradVal', suffix: '%'},
+    {id: 'inflacion', display: 'inflVal', suffix: '%'},
+    {id: 'tasaDescuento', display: 'tasaVal', suffix: '%'}
+  ];
+  
+  sliders.forEach(s => {
+    const slider = document.getElementById(s.id);
+    const display = document.getElementById(s.display);
+    slider.addEventListener('input', function() {
+      display.textContent = this.value + s.suffix;
+    });
+  });
 }
 
-/* Calcula flujo anual: año 0 = -I, años 1..n = ahorro*(1+esc)^t*(1-deg)^t - OM */
-function flujoAnual(p, factorAhorro = 1) {
-  const flujos = [-p.I];
-  for (let t = 1; t <= p.n; t++) {
-    const ahorro = p.A * factorAhorro * Math.pow(1 + p.esc, t) * Math.pow(1 - p.deg, t);
-    flujos.push(ahorro - p.OM);
-  }
-  return flujos;
+function setScenario(scenario, btn) {
+  currentScenario = scenario;
+  
+  // Actualizar UI
+  document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  
+  // Actualizar inflación según escenario
+  const params = scenarioParams[scenario];
+  document.getElementById('inflacion').value = params.infl;
+  document.getElementById('inflVal').textContent = params.infl + '%';
+  
+  calcularProyecto();
 }
 
-function acumulado(flujos) {
-  const acc = [];
-  let s = 0;
-  for (const f of flujos) { s += f; acc.push(s); }
-  return acc;
+// ============ FORMATOS ============
+function formatCOP(value) {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(value);
 }
 
-function VAN(flujos, r) {
-  return flujos.reduce((acc, f, t) => acc + f / Math.pow(1 + r, t), 0);
+function formatNumber(value, decimals = 0) {
+  return new Intl.NumberFormat('es-CO', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals
+  }).format(value);
 }
 
-/* TIR por bisección */
-function TIR(flujos) {
-  let lo = -0.99, hi = 5;
-  for (let i = 0; i < 200; i++) {
-    const mid = (lo + hi) / 2;
-    const v = VAN(flujos, mid);
-    if (v > 0) lo = mid; else hi = mid;
-    if (Math.abs(v) < 1e-6) break;
-  }
-  return (lo + hi) / 2;
+function getVal(id) {
+  return parseFloat(document.getElementById(id).value) || 0;
 }
 
-function retornoSimple(I, flujoAnualBase) {
-  if (I <= 0) return 0;
-  let acc = -I;
-  for (let t = 1; t < flujoAnualBase.length; t++) {
-    const prev = acc;
-    acc += flujoAnualBase[t];
-    if (acc >= 0) {
-      // interpolación lineal
-      const frac = -prev / flujoAnualBase[t];
-      return t - 1 + frac;
+// ============ CÁLCULO PRINCIPAL ============
+function calcularProyecto() {
+  try {
+    // Ocultar errores previos
+    document.getElementById('errorMsg').classList.remove('show');
+    
+    // Obtener parámetros
+    const inversion = getVal('inversion');
+    const vida = getVal('vida');
+    const generacionBase = getVal('generacion');
+    const degradacion = getVal('degradacion') / 100;
+    const precioBase = getVal('precioEnergia');
+    const inflacion = getVal('inflacion') / 100;
+    const om = getVal('om');
+    const reemplazo = getVal('reemplazo');
+    const anioRep = getVal('anioReemplazo');
+    const tasa = getVal('tasaDescuento') / 100;
+    
+    // Validaciones
+    if (inversion <= 0) throw new Error('La inversión debe ser mayor a cero');
+    if (vida <= 0) throw new Error('La vida útil debe ser mayor a cero');
+    if (generacionBase <= 0) throw new Error('La generación debe ser mayor a cero');
+    
+    // Ajustar por escenario
+    const params = scenarioParams[currentScenario];
+    const generacion = generacionBase * params.mult;
+    const inflEscenario = params.infl / 100;
+    
+    // Calcular flujos
+    const flujos = [];
+    let acumulado = -inversion;
+    let van = -inversion;
+    let vpCostos = inversion;
+    let vpEnergia = 0;
+    
+    for (let t = 1; t <= vida; t++) {
+      const gen = generacion * Math.pow(1 - degradacion, t - 1);
+      const precio = precioBase * Math.pow(1 + inflEscenario, t - 1);
+      const ingreso = gen * precio;
+      const costos = om + (t === anioRep ? reemplazo : 0);
+      const flujoNeto = ingreso - costos;
+      const factorDesc = Math.pow(1 + tasa, t);
+      const flujoVP = flujoNeto / factorDesc;
+      
+      acumulado += flujoNeto;
+      van += flujoVP;
+      vpCostos += costos / factorDesc;
+      vpEnergia += gen / factorDesc;
+      
+      flujos.push({
+        t, gen, precio, ingreso, costos, flujoNeto,
+        flujoVP, acumulado, van
+      });
     }
-  }
-  return Infinity; // no recupera
-}
-
-function LCOE(flujos, energia, r) {
-  // LCOE = sum(C_t/(1+r)^t) / sum(E_t/(1+r)^t)
-  let num = 0, den = 0;
-  for (let t = 0; t < flujos.length; t++) {
-    const desc = Math.pow(1 + r, t);
-    num += flujos[t] / desc;
-    // Energía: año 0 = 0, año t >= 1
-    if (t > 0) {
-      const Et = energia * Math.pow(1 - (energia > 0 ? 0 : 0), 0); // placeholder
-      den += Et / desc;
+    
+    // Calcular TIR (método de bisección)
+    let tir = null;
+    let low = -0.5, high = 1.0;
+    for (let i = 0; i < 100; i++) {
+      const mid = (low + high) / 2;
+      let npv = -inversion;
+      for (const f of flujos) {
+        npv += f.flujoNeto / Math.pow(1 + mid, f.t);
+      }
+      if (Math.abs(npv) < 1) {
+        tir = mid;
+        break;
+      }
+      if (npv > 0) low = mid;
+      else high = mid;
     }
+    
+    // Calcular Payback
+    let payback = null;
+    let acumSimple = -inversion;
+    for (const f of flujos) {
+      const prev = acumSimple;
+      acumSimple += f.flujoNeto;
+      if (acumSimple >= 0 && prev < 0 && f.flujoNeto > 0) {
+        payback = f.t - 1 + (-prev) / f.flujoNeto;
+        break;
+      }
+    }
+    
+    // Calcular LCOE
+    const LCOE = vpEnergia > 0 ? vpCostos / vpEnergia : 0;
+    
+    // Renderizar resultados
+    renderAlertas(flujos, van, tir, payback, LCOE, precioBase, inversion, vida);
+    renderKPIs(inversion, payback, van, tir, LCOE, flujos[0]?.ingreso || 0);
+    renderTabla(flujos, inversion);
+    renderCharts(flujos, inversion, van, tir, LCOE, payback, {
+      inversion, vida, generacion, degradacion, precioBase, inflEscenario, om, reemplazo, anioRep, tasa
+    });
+    
+  } catch (error) {
+    console.error('Error en cálculo:', error);
+    document.getElementById('errorMsg').textContent = '❌ Error: ' + error.message;
+    document.getElementById('errorMsg').classList.add('show');
   }
-  return den > 0 ? num / den : 0;
 }
 
-function LCOECompleto(p) {
-  // Construye flujos de COSTE (inversión + OM) y de ENERGÍA
-  let num = p.I; // año 0
-  let den = 0;
-  for (let t = 1; t <= p.n; t++) {
-    const desc = Math.pow(1 + p.r, t);
-    num += p.OM / desc;
-    const Et = p.E * Math.pow(1 - p.deg, t);
-    den += Et / desc;
+// ============ RENDERIZADO ============
+function renderAlertas(flujos, van, tir, payback, LCOE, precioBase, inversion, vida) {
+  const container = document.getElementById('alertas');
+  const tasa = getVal('tasaDescuento');
+  let html = '';
+  
+  const ahorroY1 = flujos[0]?.ingreso || 0;
+  
+  if (ahorroY1 <= 0) {
+    html += `
+      <div class="alert alert-warning">
+        <div class="alert-icon">️</div>
+        <div class="alert-content">
+          <h4>Ahorro Insuficiente</h4>
+          <p>El ahorro del primer año es muy bajo o negativo. Verifica la generación esperada y el precio de la energía.</p>
+        </div>
+      </div>
+    `;
   }
-  return den > 0 ? num / den : 0;
+  
+  if (payback === null) {
+    html += `
+      <div class="alert alert-danger">
+        <div class="alert-icon"></div>
+        <div class="alert-content">
+          <h4>No hay Retorno de Inversión</h4>
+          <p>El proyecto no recupera la inversión en ${vida} años. Los ahorros no son suficientes para cubrir la inversión inicial.</p>
+        </div>
+      </div>
+    `;
+  } else if (payback > vida * 0.7) {
+    html += `
+      <div class="alert alert-warning">
+        <div class="alert-icon">⏰</div>
+        <div class="alert-content">
+          <h4>Retorno Muy Largo</h4>
+          <p>El periodo de retorno es de ${payback.toFixed(1)} años, lo que representa más del 70% de la vida útil del proyecto. Alto riesgo.</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  if (van < 0) {
+    html += `
+      <div class="alert alert-danger">
+        <div class="alert-icon">📉</div>
+        <div class="alert-content">
+          <h4>VAN Negativo</h4>
+          <p>El Valor Actual Neto es ${formatCOP(van)}. El proyecto destruye valor considerando la tasa de descuento del ${tasa}%.</p>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="alert alert-success">
+        <div class="alert-icon">✅</div>
+        <div class="alert-content">
+          <h4>Proyecto Rentable</h4>
+          <p>El VAN es ${formatCOP(van)}. El proyecto crea valor por encima de la tasa de descuento exigida.</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  if (tir !== null && tir < tasa / 100) {
+    html += `
+      <div class="alert alert-warning">
+        <div class="alert-icon">📊</div>
+        <div class="alert-content">
+          <h4>TIR por Debajo de la Tasa</h4>
+          <p>La TIR (${(tir*100).toFixed(2)}%) es menor que la tasa de descuento (${tasa}%). El rendimiento no justifica el riesgo.</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  if (LCOE > precioBase) {
+    html += `
+      <div class="alert alert-info">
+        <div class="alert-icon"></div>
+        <div class="alert-content">
+          <h4>LCOE vs Precio de Red</h4>
+          <p>El LCOE (${formatCOP(LCOE)}/kWh) es mayor que el precio actual de la red (${formatCOP(precioBase)}/kWh). Considera negociar mejores precios de equipos.</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  container.innerHTML = html;
 }
 
-/* =========================
-   RENDERIZADO PRINCIPAL
-========================= */
-function calcular() {
-  const p = getParams();
-  const flujos = flujoAnual(p);
-  const acc = acumulado(flujos);
-  const van = VAN(flujos, p.r);
-  const tir = TIR(flujos);
-  const payback = retornoSimple(p.I, flujos);
-  const lcoe = LCOECompleto(p);
-  const ahorroNetoAnual = p.A - p.OM;
-
-  // KPIs
-  const kpis = $('kpis');
-  const paybackClass = payback === Infinity ? 'bad' : (payback <= p.n/2 ? 'good' : 'warn');
-  const vanClass = van > 0 ? 'good' : 'bad';
-  const tirClass = tir*100 > p.r*100 ? 'good' : 'bad';
+function renderKPIs(inversion, payback, van, tir, LCOE, ahorroY1) {
+  const kpis = document.getElementById('kpis');
+  
+  const paybackClass = payback === null ? 'danger' : (payback > 10 ? 'warning' : 'success');
+  const vanClass = van < 0 ? 'danger' : 'success';
+  const tirClass = tir === null || tir < getVal('tasaDescuento')/100 ? 'warning' : 'success';
+  
   kpis.innerHTML = `
-    <div class="kpi ${paybackClass}">
-      <div class="label">Retorno Simple</div>
-      <div class="value">${payback === Infinity ? '∞' : payback.toFixed(2) + ' años'}</div>
+    <div class="kpi-card">
+      <div class="kpi-label">💵 Inversión Total</div>
+      <div class="kpi-value">${formatCOP(inversion)}</div>
+      <div class="kpi-sub">Capital inicial</div>
     </div>
-    <div class="kpi ${vanClass}">
-      <div class="label">VAN</div>
-      <div class="value">${fmtEur(van)}</div>
+    <div class="kpi-card ${paybackClass}">
+      <div class="kpi-label">⏱️ Periodo de Retorno</div>
+      <div class="kpi-value">${payback ? payback.toFixed(1) + ' años' : 'No recupera'}</div>
+      <div class="kpi-sub">Payback simple</div>
     </div>
-    <div class="kpi ${tirClass}">
-      <div class="label">TIR</div>
-      <div class="value">${isFinite(tir) ? fmtPct(tir*100) : 'N/D'}</div>
+    <div class="kpi-card ${vanClass}">
+      <div class="kpi-label">💰 VAN</div>
+      <div class="kpi-value">${formatCOP(van)}</div>
+      <div class="kpi-sub">Valor actual neto</div>
     </div>
-    <div class="kpi">
-      <div class="label">LCOE</div>
-      <div class="value">${p.E > 0 ? lcoe.toFixed(2) + ' €/MWh' : 'N/D'}</div>
+    <div class="kpi-card ${tirClass}">
+      <div class="kpi-label">📈 TIR</div>
+      <div class="kpi-value">${tir ? (tir*100).toFixed(2) + '%' : 'N/D'}</div>
+      <div class="kpi-sub">Tasa interna de retorno</div>
     </div>
-    <div class="kpi ${ahorroNetoAnual <= 0 ? 'bad' : ''}">
-      <div class="label">Ahorro neto año 1</div>
-      <div class="value">${fmtEur(ahorroNetoAnual)}</div>
+    <div class="kpi-card">
+      <div class="kpi-label"> LCOE</div>
+      <div class="kpi-value">${formatCOP(LCOE)}</div>
+      <div class="kpi-sub">Por kWh generado</div>
     </div>
-    <div class="kpi">
-      <div class="label">Inversión</div>
-      <div class="value">${fmtEur(p.I)}</div>
+    <div class="kpi-card success">
+      <div class="kpi-label"> Ahorro Año 1</div>
+      <div class="kpi-value">${formatCOP(ahorroY1)}</div>
+      <div class="kpi-sub">Primer año operación</div>
     </div>
   `;
-
-  // Diagnóstico
-  const diag = $('diagnostico');
-  let msg = '';
-  if (p.A <= 0) {
-    msg = `<div class="info-box bad">⚠️ <b>Ahorro nulo o negativo.</b> El proyecto no genera beneficio directo; revisa los ingresos o subvenciones.</div>`;
-  } else if (ahorroNetoAnual <= 0) {
-    msg = `<div class="info-box warn">⚠️ El ahorro bruto no cubre los costes O&M. Revisa la dimensión del proyecto.</div>`;
-  } else if (payback === Infinity) {
-    msg = `<div class="info-box bad">❌ El proyecto <b>nunca recupera</b> la inversión en su vida útil.</div>`;
-  } else if (van < 0) {
-    msg = `<div class="info-box warn">⚠️ VAN negativo: el proyecto <b>destruye valor</b> a la tasa de descuento actual (${(p.r*100).toFixed(1)}%).</div>`;
-  } else {
-    msg = `<div class="info-box">✅ Proyecto viable: recupera la inversión en <b>${payback.toFixed(1)} años</b> y genera valor.</div>`;
-  }
-  diag.innerHTML = msg;
-
-  // Tabla flujo
-  const tabla = $('tablaFlujo');
-  let html = '<tr><th>Año</th><th>Flujo (€)</th><th>Acumulado (€)</th><th>Factor desc.</th><th>Flujo desc. (€)</th></tr>';
-  let vanAcc = 0;
-  for (let t = 0; t < flujos.length; t++) {
-    const fac = 1 / Math.pow(1 + p.r, t);
-    const fd = flujos[t] * fac;
-    vanAcc += fd;
-    html += `<tr><td>${t}</td><td>${fmtEur(flujos[t])}</td><td>${fmtEur(acc[t])}</td><td>${fac.toFixed(3)}</td><td>${fmtEur(fd)}</td></tr>`;
-  }
-  tabla.innerHTML = html;
-
-  // Gráfico flujo
-  dibujarFlujo(flujos, acc, payback);
-  dibujarEscenarios(p);
-  dibujarSensibilidad(p);
-  dibujarLCOE(p);
 }
 
-/* =========================
-   GRÁFICOS (Canvas puro)
-========================= */
-function limpiar(ctx, w, h) {
-  ctx.clearRect(0, 0, w, h);
-}
-
-function dibujarFlujo(flujos, acc, payback) {
-  const c = $('canvasFlujo');
-  const ctx = c.getContext('2d');
-  const W = c.width, H = c.height;
-  limpiar(ctx, W, H);
-  const pad = {l:70, r:30, t:30, b:50};
-  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
-
-  const n = flujos.length;
-  const maxF = Math.max(...flujos.map(Math.abs), 1);
-  const maxA = Math.max(...acc.map(Math.abs), 1);
-  const scale = Math.max(maxF, maxA);
-
-  // Ejes
-  ctx.strokeStyle = '#475569';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(pad.l, pad.t);
-  ctx.lineTo(pad.l, pad.t + gh);
-  ctx.lineTo(pad.l + gw, pad.t + gh);
-  ctx.stroke();
-
-  // Línea cero
-  const y0 = pad.t + gh/2;
-  ctx.strokeStyle = '#64748b';
-  ctx.setLineDash([4,4]);
-  ctx.beginPath();
-  ctx.moveTo(pad.l, y0);
-  ctx.lineTo(pad.l + gw, y0);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  // Barras flujo anual
-  const bw = gw / n * 0.6;
-  for (let i = 0; i < n; i++) {
-    const x = pad.l + (i + 0.5) * gw / n - bw/2;
-    const hBar = (flujos[i] / scale) * (gh/2);
-    ctx.fillStyle = flujos[i] >= 0 ? '#4ade80' : '#ef4444';
-    ctx.fillRect(x, y0 - (flujos[i]>=0?hBar:0), bw, Math.abs(hBar));
-  }
-
-  // Línea acumulado
-  ctx.strokeStyle = '#fbbf24';
-  ctx.lineWidth = 2.5;
-  ctx.beginPath();
-  for (let i = 0; i < n; i++) {
-    const x = pad.l + (i + 0.5) * gw / n;
-    const y = y0 - (acc[i] / scale) * (gh/2);
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-
-  // Punto de retorno
-  if (isFinite(payback) && payback < n) {
-    const x = pad.l + (payback + 0.5) * gw / n;
-    ctx.strokeStyle = '#ef4444';
-    ctx.setLineDash([5,3]);
-    ctx.beginPath();
-    ctx.moveTo(x, pad.t);
-    ctx.lineTo(x, pad.t + gh);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.fillText('Payback: ' + payback.toFixed(2) + ' años', x + 5, pad.t + 15);
-  }
-
-  // Etiquetas eje X
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  for (let i = 0; i < n; i++) {
-    if (i % Math.ceil(n/15) === 0) {
-      const x = pad.l + (i + 0.5) * gw / n;
-      ctx.fillText('Año ' + i, x, pad.t + gh + 18);
-    }
-  }
-
-  // Etiquetas eje Y
-  ctx.textAlign = 'right';
-  for (let i = -2; i <= 2; i++) {
-    const y = y0 - (i/2) * gh;
-    const val = (i/2) * scale;
-    ctx.fillText((val/1000).toFixed(0) + 'k€', pad.l - 8, y + 4);
-  }
-
-  // Título
-  ctx.fillStyle = '#f0f4f8';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Flujo anual (barras) y acumulado (línea)', pad.l, pad.t - 10);
-}
-
-function dibujarEscenarios(p) {
-  const c = $('canvasEscenarios');
-  const ctx = c.getContext('2d');
-  const W = c.width, H = c.height;
-  limpiar(ctx, W, H);
-  const pad = {l:70, r:30, t:30, b:50};
-  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
-
-  const escenarios = [
-    {nombre:'Optimista', factor:1.2, color:'#4ade80'},
-    {nombre:'Base', factor:1.0, color:'#3b82f6'},
-    {nombre:'Pesimista', factor:0.8, color:'#ef4444'}
-  ];
-
-  // Barra de escenarios con KPIs
-  const bar = $('escenariosBar');
-  bar.innerHTML = '';
-  escenarios.forEach(e => {
-    const f = flujoAnual(p, e.factor);
-    const van = VAN(f, p.r);
-    const pay = retornoSimple(p.I, f);
-    const div = document.createElement('div');
-    div.className = 'scenario ' + (e.factor===1.2?'opt':e.factor===1?'base':'pes');
-    div.innerHTML = `<b>${e.nombre}</b><br>VAN: ${fmtEur(van)}<br>Payback: ${isFinite(pay)?pay.toFixed(2)+'a':'∞'}`;
-    bar.appendChild(div);
+function renderTabla(flujos, inversion) {
+  const tbody = document.getElementById('tablaBody');
+  let html = '';
+  
+  // Fila año 0
+  html += `
+    <tr style="background:#f8f9fa; font-weight:600;">
+      <td>0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td>-</td>
+      <td class="negative">${formatCOP(-inversion)}</td>
+      <td class="negative">${formatCOP(-inversion)}</td>
+      <td class="negative">${formatCOP(-inversion)}</td>
+    </tr>
+  `;
+  
+  // Filas de años
+  flujos.forEach(f => {
+    const claseNeto = f.flujoNeto < 0 ? 'negative' : 'positive';
+    const claseAcum = f.acumulado < 0 ? 'negative' : 'positive';
+    const claseVP = f.van < 0 ? 'negative' : 'positive';
+    
+    html += `
+      <tr>
+        <td>${f.t}</td>
+        <td>${formatNumber(f.gen, 0)}</td>
+        <td>${formatCOP(f.precio)}</td>
+        <td>${formatCOP(f.ingreso)}</td>
+        <td>${formatCOP(f.costos)}</td>
+        <td class="${claseNeto}">${formatCOP(f.flujoNeto)}</td>
+        <td class="${claseAcum}">${formatCOP(f.acumulado)}</td>
+        <td class="${claseVP}">${formatCOP(f.flujoVP)}</td>
+      </tr>
+    `;
   });
-
-  // Líneas acumuladas
-  const pad2 = {l:70, r:30, t:30, b:50};
-  const gw2 = W - pad2.l - pad2.r, gh2 = H - pad2.t - pad2.b;
-  let maxAbs = 1;
-  const series = escenarios.map(e => {
-    const f = flujoAnual(p, e.factor);
-    const a = acumulado(f);
-    maxAbs = Math.max(maxAbs, ...a.map(Math.abs));
-    return {...e, acc:a};
-  });
-
-  // Ejes
-  ctx.strokeStyle = '#475569';
-  ctx.beginPath();
-  ctx.moveTo(pad2.l, pad2.t);
-  ctx.lineTo(pad2.l, pad2.t + gh2);
-  ctx.lineTo(pad2.l + gw2, pad2.t + gh2);
-  ctx.stroke();
-
-  const y0 = pad2.t + gh2/2;
-  ctx.strokeStyle = '#64748b';
-  ctx.setLineDash([4,4]);
-  ctx.beginPath();
-  ctx.moveTo(pad2.l, y0);
-  ctx.lineTo(pad2.l + gw2, y0);
-  ctx.stroke();
-  ctx.setLineDash([]);
-
-  series.forEach(s => {
-    ctx.strokeStyle = s.color;
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    for (let i = 0; i < s.acc.length; i++) {
-      const x = pad2.l + (i + 0.5) * gw2 / s.acc.length;
-      const y = y0 - (s.acc[i] / maxAbs) * (gh2/2);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    }
-    ctx.stroke();
-  });
-
-  // Etiquetas
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  const n = p.n + 1;
-  for (let i = 0; i < n; i++) {
-    if (i % Math.ceil(n/15) === 0) {
-      const x = pad2.l + (i + 0.5) * gw2 / n;
-      ctx.fillText('Año ' + i, x, pad2.t + gh2 + 18);
-    }
-  }
-  ctx.textAlign = 'right';
-  for (let i = -2; i <= 2; i++) {
-    const y = y0 - (i/2) * gh2;
-    const val = (i/2) * maxAbs;
-    ctx.fillText((val/1000).toFixed(0) + 'k€', pad2.l - 8, y + 4);
-  }
-  ctx.fillStyle = '#f0f4f8';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Flujo acumulado por escenario', pad2.l, pad2.t - 10);
+  
+  tbody.innerHTML = html;
 }
 
-function dibujarSensibilidad(p) {
-  const c = $('canvasSens');
-  const ctx = c.getContext('2d');
-  const W = c.width, H = c.height;
-  limpiar(ctx, W, H);
-  const pad = {l:180, r:40, t:30, b:40};
-  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
-
-  const vanBase = VAN(flujoAnual(p), p.r);
+function renderCharts(flujos, inversion, van, tir, LCOE, payback, params) {
+  // Destruir charts anteriores
+  Object.values(charts).forEach(c => c.destroy());
+  
+  const labels = ['Año 0', ...flujos.map(f => `Año ${f.t}`)];
+  const dataAcum = [-inversion, ...flujos.map(f => f.acumulado)];
+  const dataVan = [-inversion, ...flujos.map(f => f.van)];
+  
+  // Chart 1: Acumulado
+  charts.acum = new Chart(document.getElementById('chartAcum'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Flujo Acumulado',
+          data: dataAcum,
+          borderColor: '#3498db',
+          backgroundColor: 'rgba(52, 152, 219, 0.1)',
+          tension: 0.4,
+          fill: true
+        },
+        {
+          label: 'VAN Acumulado',
+          data: dataVan,
+          borderColor: '#00a86b',
+          backgroundColor: 'rgba(0, 168, 107, 0.1)',
+          tension: 0.4,
+          fill: true,
+          borderDash: [5, 5]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: function(value) {
+              return '$' + (value/1000000).toFixed(1) + 'M';
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  // Chart 2: Barras
+  charts.barras = new Chart(document.getElementById('chartBarras'), {
+    type: 'bar',
+    data: {
+      labels: labels.slice(1),
+      datasets: [
+        {
+          label: 'Ingresos (Ahorro)',
+          data: flujos.map(f => f.ingreso),
+          backgroundColor: '#00a86b'
+        },
+        {
+          label: 'Costos',
+          data: flujos.map(f => f.costos),
+          backgroundColor: '#e74c3c'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: function(value) {
+              return '$' + (value/1000000).toFixed(1) + 'M';
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  // Chart 3: Sensibilidad
   const vars = [
-    {nombre:'Inversión', key:'I', delta: v => v*0.2},
-    {nombre:'Ahorro anual', key:'A', delta: v => v*0.2},
-    {nombre:'Coste O&M', key:'OM', delta: v => v*0.2},
-    {nombre:'Vida útil', key:'n', delta: v => Math.round(v*0.2)},
-    {nombre:'Tasa descuento', key:'r', delta: v => v*0.2},
-    {nombre:'Energía', key:'E', delta: v => v*0.2}
+    {name: 'Inversión', key: 'inversion', base: params.inversion},
+    {name: 'Generación', key: 'generacion', base: params.generacion},
+    {name: 'Precio Energía', key: 'precioBase', base: params.precioBase},
+    {name: 'Tasa Desc.', key: 'tasa', base: params.tasa},
+    {name: 'O&M', key: 'om', base: params.om}
   ];
-
-  const resultados = vars.map(v => {
-    const val = p[v.key];
-    const d = v.delta(val);
-    // +20%
-    const pUp = {...p, [v.key]: val + d};
-    const pDn = {...p, [v.key]: val - d};
-    const vanUp = VAN(flujoAnual(pUp), pUp.r);
-    const vanDn = VAN(flujoAnual(pDn), pDn.r);
-    return {...v, vanUp, vanDn, diff: Math.abs(vanUp - vanDn)};
-  }).sort((a,b) => b.diff - a.diff);
-
-  const maxDiff = Math.max(...resultados.map(r => r.diff), 1);
-
-  // Eje vertical central
-  const x0 = pad.l + gw/2;
-  ctx.strokeStyle = '#475569';
-  ctx.beginPath();
-  ctx.moveTo(x0, pad.t);
-  ctx.lineTo(x0, pad.t + gh);
-  ctx.stroke();
-
-  const barH = gh / resultados.length * 0.7;
-  const gap = gh / resultados.length;
-
-  resultados.forEach((r, i) => {
-    const y = pad.t + i * gap + (gap - barH)/2;
-    // barra negativa (pesimista)
-    const wDn = (Math.abs(r.vanDn - vanBase) / maxDiff) * (gw/2);
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(x0 - wDn, y, wDn, barH);
-    // barra positiva (optimista)
-    const wUp = (Math.abs(r.vanUp - vanBase) / maxDiff) * (gw/2);
-    ctx.fillStyle = '#4ade80';
-    ctx.fillRect(x0, y, wUp, barH);
-
-    // etiqueta
-    ctx.fillStyle = '#f0f4f8';
-    ctx.font = '12px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(r.nombre, pad.l - 10, y + barH/2 + 4);
+  
+  const sensData = vars.map(v => {
+    const testParams = {...params};
+    const up = calcularVANConCambio(testParams, v.key, v.base * 1.2);
+    const down = calcularVANConCambio(testParams, v.key, v.base * 0.8);
+    return {
+      name: v.name,
+      up: up - van,
+      down: down - van
+    };
   });
-
-  // Etiquetas eje X
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  for (let i = -2; i <= 2; i++) {
-    const x = x0 + (i/2) * gw/2;
-    const val = (i/2) * maxDiff;
-    ctx.fillText((val/1000).toFixed(1) + 'k€', x, pad.t + gh + 18);
-  }
-
-  ctx.fillStyle = '#f0f4f8';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Impacto en VAN ante variación ±20% de cada parámetro', pad.l, pad.t - 10);
-
-  // Leyenda
-  ctx.font = '11px sans-serif';
-  ctx.fillStyle = '#4ade80';
-  ctx.textAlign = 'left';
-  ctx.fillText('■ Escenario favorable', pad.l, pad.t + gh + 35);
-  ctx.fillStyle = '#ef4444';
-  ctx.fillText('■ Escenario desfavorable', pad.l + 180, pad.t + gh + 35);
+  
+  charts.sens = new Chart(document.getElementById('chartSens'), {
+    type: 'bar',
+    data: {
+      labels: sensData.map(s => s.name),
+      datasets: [
+        {
+          label: 'VAN si +20%',
+          data: sensData.map(s => s.up),
+          backgroundColor: '#00a86b'
+        },
+        {
+          label: 'VAN si -20%',
+          data: sensData.map(s => s.down),
+          backgroundColor: '#e74c3c'
+        }
+      ]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      },
+      scales: {
+        x: {
+          ticks: {
+            callback: function(value) {
+              return '$' + (value/1000000).toFixed(1) + 'M';
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  // Chart 4: Escenarios
+  const escCons = calcularEscenario(0.8, 6.5/100, params);
+  const escOpt = calcularEscenario(1.2, 6.5/100, params);
+  
+  charts.esc = new Chart(document.getElementById('chartEsc'), {
+    type: 'bar',
+    data: {
+      labels: ['VAN (M COP)', 'Payback (años)', 'TIR (%)', 'LCOE (COP)'],
+      datasets: [
+        {
+          label: '😟 Conservador',
+          data: [
+            escCons.van / 1000000,
+            escCons.payback || params.vida,
+            (escCons.tir || 0) * 100,
+            escCons.LCOE
+          ],
+          backgroundColor: '#e74c3c'
+        },
+        {
+          label: ' Base',
+          data: [
+            van / 1000000,
+            payback || params.vida,
+            (tir || 0) * 100,
+            LCOE
+          ],
+          backgroundColor: '#3498db'
+        },
+        {
+          label: '🚀 Optimista',
+          data: [
+            escOpt.van / 1000000,
+            escOpt.payback || params.vida,
+            (escOpt.tir || 0) * 100,
+            escOpt.LCOE
+          ],
+          backgroundColor: '#00a86b'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top' }
+      }
+    }
+  });
 }
 
-function dibujarLCOE(p) {
-  const c = $('canvasLCOE');
-  const ctx = c.getContext('2d');
-  const W = c.width, H = c.height;
-  limpiar(ctx, W, H);
-  const pad = {l:70, r:30, t:30, b:50};
-  const gw = W - pad.l - pad.r, gh = H - pad.t - pad.b;
-
-  if (p.E <= 0) {
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Introduce energía generada para calcular el LCOE', W/2, H/2);
-    return;
+function calcularVANConCambio(params, key, valor) {
+  const testParams = {...params, [key]: valor};
+  let van = -testParams.inversion;
+  
+  for (let t = 1; t <= testParams.vida; t++) {
+    const gen = testParams.generacion * Math.pow(1 - testParams.degradacion, t - 1);
+    const precio = testParams.precioBase * Math.pow(1 + testParams.inflEscenario, t - 1);
+    const ingreso = gen * precio;
+    const costos = testParams.om + (t === testParams.anioRep ? testParams.reemplazo : 0);
+    const flujo = ingreso - costos;
+    van += flujo / Math.pow(1 + testParams.tasa, t);
   }
+  
+  return van;
+}
 
-  // LCOE acumulado año a año
-  const lcoes = [];
-  let num = p.I;
-  let den = 0;
-  lcoes.push(0);
-  for (let t = 1; t <= p.n; t++) {
-    const desc = Math.pow(1 + p.r, t);
-    num += p.OM / desc;
-    const Et = p.E * Math.pow(1 - p.deg, t);
-    den += Et / desc;
-    lcoes.push(den > 0 ? num / den : 0);
+function calcularEscenario(mult, infl, params) {
+  const testParams = {...params, generacion: params.generacion * mult, inflEscenario: infl};
+  let van = -testParams.inversion;
+  let acum = -testParams.inversion;
+  let vpCostos = testParams.inversion;
+  let vpEnergia = 0;
+  
+  for (let t = 1; t <= testParams.vida; t++) {
+    const gen = testParams.generacion * Math.pow(1 - testParams.degradacion, t - 1);
+    const precio = testParams.precioBase * Math.pow(1 + testParams.inflEscenario, t - 1);
+    const ingreso = gen * precio;
+    const costos = testParams.om + (t === testParams.anioRep ? testParams.reemplazo : 0);
+    const flujo = ingreso - costos;
+    
+    acum += flujo;
+    van += flujo / Math.pow(1 + testParams.tasa, t);
+    vpCostos += costos / Math.pow(1 + testParams.tasa, t);
+    vpEnergia += gen / Math.pow(1 + testParams.tasa, t);
   }
-
-  const maxL = Math.max(...lcoes, 1);
-  const minL = Math.min(...lcoes);
-
-  // Ejes
-  ctx.strokeStyle = '#475569';
-  ctx.beginPath();
-  ctx.moveTo(pad.l, pad.t);
-  ctx.lineTo(pad.l, pad.t + gh);
-  ctx.lineTo(pad.l + gw, pad.t + gh);
-  ctx.stroke();
-
-  // Línea LCOE
-  ctx.strokeStyle = '#4ade80';
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  for (let i = 0; i < lcoes.length; i++) {
-    const x = pad.l + i * gw / (lcoes.length - 1);
-    const y = pad.t + gh - (lcoes[i] - minL*0.9) / (maxL - minL*0.9) * gh;
-    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  
+  // Calcular TIR aproximada
+  let tir = null;
+  let low = -0.5, high = 1.0;
+  for (let i = 0; i < 50; i++) {
+    const mid = (low + high) / 2;
+    let npv = -testParams.inversion;
+    for (let t = 1; t <= testParams.vida; t++) {
+      const gen = testParams.generacion * Math.pow(1 - testParams.degradacion, t - 1);
+      const precio = testParams.precioBase * Math.pow(1 + testParams.inflEscenario, t - 1);
+      const flujo = gen * precio - (testParams.om + (t === testParams.anioRep ? testParams.reemplazo : 0));
+      npv += flujo / Math.pow(1 + mid, t);
+    }
+    if (Math.abs(npv) < 1000) { tir = mid; break; }
+    if (npv > 0) low = mid; else high = mid;
   }
-  ctx.stroke();
-
-  // Línea precio mercado (referencia: 80 €/MWh)
-  const precioRef = 80;
-  if (precioRef >= minL*0.9 && precioRef <= maxL*1.1) {
-    const yRef = pad.t + gh - (precioRef - minL*0.9) / (maxL - minL*0.9) * gh;
-    ctx.strokeStyle = '#fbbf24';
-    ctx.setLineDash([6,4]);
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(pad.l, yRef);
-    ctx.lineTo(pad.l + gw, yRef);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = '11px sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Precio ref. mercado: ' + precioRef + ' €/MWh', pad.l + 5, yRef - 5);
-  }
-
-  // Etiquetas
-  ctx.fillStyle = '#cbd5e1';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  for (let i = 0; i < lcoes.length; i++) {
-    if (i % Math.ceil(lcoes.length/15) === 0) {
-      const x = pad.l + i * gw / (lcoes.length - 1);
-      ctx.fillText('Año ' + i, x, pad.t + gh + 18);
+  
+  // Calcular Payback
+  let payback = null;
+  let acSimple = -testParams.inversion;
+  for (let t = 1; t <= testParams.vida; t++) {
+    const gen = testParams.generacion * Math.pow(1 - testParams.degradacion, t - 1);
+    const precio = testParams.precioBase * Math.pow(1 + testParams.inflEscenario, t - 1);
+    const flujo = gen * precio - (testParams.om + (t === testParams.anioRep ? testParams.reemplazo : 0));
+    const prev = acSimple;
+    acSimple += flujo;
+    if (acSimple >= 0 && prev < 0 && flujo > 0) {
+      payback = t - 1 + (-prev) / flujo;
+      break;
     }
   }
-  ctx.textAlign = 'right';
-  for (let i = 0; i <= 4; i++) {
-    const y = pad.t + gh - (i/4) * gh;
-    const val = minL*0.9 + (i/4) * (maxL - minL*0.9);
-    ctx.fillText(val.toFixed(1) + ' €/MWh', pad.l - 8, y + 4);
-  }
-  ctx.fillStyle = '#f0f4f8';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Evolución del LCOE acumulado', pad.l, pad.t - 10);
+  
+  const LCOE = vpEnergia > 0 ? vpCostos / vpEnergia : 0;
+  
+  return {van, tir, payback, LCOE};
 }
 
-/* =========================
-   EVENTOS
-========================= */
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(x => x.classList.remove('active'));
-    t.classList.add('active');
-    $(t.dataset.tab).classList.add('active');
+function cargarEjemplo() {
+  document.getElementById('inversion').value = 75000000;
+  document.getElementById('vida').value = 25;
+  document.getElementById('generacion').value = 18000;
+  document.getElementById('degradacion').value = 0.5;
+  document.getElementById('degradVal').textContent = '0.5%';
+  document.getElementById('precioEnergia').value = 700;
+  document.getElementById('inflacion').value = 4.5;
+  document.getElementById('inflVal').textContent = '4.5%';
+  document.getElementById('om').value = 750000;
+  document.getElementById('reemplazo').value = 12000000;
+  document.getElementById('anioReemplazo').value = 12;
+  document.getElementById('tasaDescuento').value = 12;
+  document.getElementById('tasaVal').textContent = '12%';
+  
+  // Seleccionar escenario base
+  document.querySelectorAll('.scenario-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === 1);
   });
-});
-
-// Sincronizar sliders con inputs
-['vida','tasa'].forEach(id => {
-  const sl = $(id), nm = $(id+'Num');
-  sl.addEventListener('input', () => { nm.value = sl.value; calcular(); });
-  nm.addEventListener('input', () => { sl.value = nm.value; calcular(); });
-});
-
-// Recalcular ante cualquier cambio
-document.querySelectorAll('input').forEach(i => i.addEventListener('input', calcular));
-
-// Inicio
-calcular();
+  currentScenario = 'base';
+  
+  calcularProyecto();
+}
 </script>
 
 </body>
