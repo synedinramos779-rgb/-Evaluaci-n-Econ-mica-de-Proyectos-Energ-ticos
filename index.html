@@ -837,6 +837,14 @@ tbody tr:hover{background:#f0fdfa;transform:none}
 }
 </style>
 
+
+<style id="seke-3d-upgrade">
+.energy-stage{margin:26px 0;padding:clamp(18px,3vw,30px);border-radius:28px;background:linear-gradient(135deg,#08152e,#123b62 55%,#167d85);color:#fff;box-shadow:0 22px 55px #07162b40;overflow:hidden;position:relative}
+.energy-stage:before{content:"";position:absolute;width:280px;height:280px;border-radius:50%;background:#39d8d055;filter:blur(55px);right:-80px;top:-110px}
+.stage-top{position:relative;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.stage-top h2{margin:0;font-size:clamp(1.35rem,3vw,2rem)}.stage-controls{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}.stage-controls label{display:flex;flex-direction:column;gap:7px;font-size:.88rem;font-weight:700}.stage-controls select{min-width:145px;border:1px solid #ffffff45;border-radius:12px;background:#ffffff14;color:#fff;padding:11px 13px;font:inherit}.stage-controls option{color:#102033;background:#fff}.stage-view{height:270px;position:relative;perspective:900px;display:flex;align-items:center;justify-content:center;isolation:isolate}.stage-sky{position:absolute;inset:0;border-radius:20px;background:linear-gradient(#4bb7ee,#b4edfa 70%,#5e9a67);transition:background .35s;overflow:hidden}.stage-sky:after{content:"";position:absolute;inset:auto 0 0;height:30%;background:linear-gradient(#3b8056,#1d533f)}.stage-sun{position:absolute;width:58px;height:58px;top:26px;left:calc(50% - 29px);border-radius:50%;background:#fff3a1;box-shadow:0 0 36px 13px #fff6a2aa;transition:all .35s}.stage-cloud{position:absolute;top:60px;left:12%;font-size:38px;filter:drop-shadow(0 5px 4px #24506a30)}.stage-object{position:relative;z-index:2;transform-style:preserve-3d;animation:stageFloat 5s ease-in-out infinite}.stage-base{position:absolute;width:300px;height:75px;left:calc(50% - 150px);bottom:31px;border-radius:50%;background:linear-gradient(90deg,#173b3b,#6ba26c,#173b3b);transform:rotateX(64deg);box-shadow:0 22px 18px #071d2b55}.solar-array{display:flex;gap:8px;transform:rotateX(12deg) rotateY(-16deg);filter:drop-shadow(0 16px 9px #08283c55)}.solar-panel{width:85px;height:62px;border:3px solid #c5e8f3;border-radius:5px;background:repeating-linear-gradient(90deg,transparent 0 19px,#a5d7f5 20px 22px),repeating-linear-gradient(0deg,#15518a 0 17px,#76b9df 18px 20px);box-shadow:inset 0 0 12px #0b284e}.solar-leg{width:7px;height:55px;background:linear-gradient(90deg,#c8d7df,#667c8c);margin:auto}.wind-tower{width:8px;height:150px;margin:auto;background:linear-gradient(90deg,#e5f0f5,#7b9cac,#edf7fa);position:relative;transform:perspective(300px) rotateY(-12deg)}.wind-hub{position:absolute;top:-6px;left:-8px;width:23px;height:23px;background:#f3f8fb;border-radius:50%;box-shadow:0 0 8px #fff8}.wind-blades{position:absolute;left:2px;top:4px;width:0;height:0;animation:windSpin 5s linear infinite;transform-origin:0 0}.wind-blades i{position:absolute;left:-5px;top:-82px;width:10px;height:82px;background:linear-gradient(90deg,#f5fbff,#9bb8c8);border-radius:80% 80% 10% 10%;transform-origin:50% 82px;clip-path:polygon(50% 0,100% 100%,0 100%)}.wind-blades i:nth-child(2){transform:rotate(120deg)}.wind-blades i:nth-child(3){transform:rotate(240deg)}@keyframes windSpin{to{transform:rotate(360deg)}}@keyframes stageFloat{0%,100%{transform:translateY(0) rotateY(-3deg)}50%{transform:translateY(-7px) rotateY(3deg)}}.stage-caption{position:relative;margin:8px 0 0;color:#e2f4ff;font-size:.92rem;line-height:1.5}.stage-status{display:inline-flex;align-items:center;gap:7px;border:1px solid #ffffff35;background:#ffffff12;border-radius:999px;padding:8px 12px;font-size:.82rem}.report-owner{border:1px solid #b8d6e7;background:linear-gradient(135deg,#f4fbff,#e9f5ff);border-radius:18px;padding:18px;margin-bottom:18px}.report-owner input{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid #a9c5d6;border-radius:10px;font:inherit;margin-top:8px}.report-owner small{display:block;color:#4b6475;margin-top:6px}.stage-hint{color:#d4f4ff;font-size:.83rem}
+@media(max-width:600px){.stage-view{height:230px}.solar-panel{width:65px;height:49px}.stage-base{width:240px;left:calc(50% - 120px)}.wind-tower{height:125px}.wind-blades i{top:-68px;height:68px;transform-origin:50% 68px}}
+</style>
+
 </head>
 <body>
 <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
@@ -861,6 +869,17 @@ tbody tr:hover{background:#f0fdfa;transform:none}
       <a class="quick-link" href="#formulas">📚 Fórmulas</a>
     </div>
 </div>
+
+<!-- SIMULACIÓN 3D INTERACTIVA -->
+<section class="energy-stage" id="simulacion3d">
+  <div class="stage-top"><div><div class="hero-badge" style="display:inline-block;background:#ffffff18;color:#d8f8ff">SIMULADOR VISUAL 3D</div><h2>Explora tu proyecto energético</h2><p class="stage-hint">Cambia la tecnología y la hora del día para ver la escena.</p></div><span class="stage-status" id="stageStatus">☀️ Medio día · Solar</span></div>
+  <div class="stage-controls">
+    <label>🌤️ Momento del día<select id="stageTime" onchange="actualizarEscena3D()"><option value="dia">Día</option><option value="noche">Noche</option><option value="mediodia" selected>Medio día</option><option value="tarde">Tarde</option></select></label>
+    <label>⚡ Tipo de energía<select id="stageEnergy" onchange="actualizarEscena3D()"><option value="solar" selected>Solar</option><option value="eolica">Eólica</option></select></label>
+  </div>
+  <div class="stage-view" id="stageView"><div class="stage-sky" id="stageSky"><div class="stage-sun" id="stageSun"></div><div class="stage-cloud">☁️</div></div><div class="stage-base"></div><div class="stage-object" id="stageObject"><div class="solar-scene"><div class="solar-array"><div><div class="solar-panel"></div><div class="solar-leg"></div></div><div><div class="solar-panel"></div><div class="solar-leg"></div></div><div><div class="solar-panel"></div><div class="solar-leg"></div></div></div></div></div></div>
+  <p class="stage-caption" id="stageCaption">Los paneles reciben radiación solar. Esta escena es una simulación visual ilustrativa; no representa una predicción meteorológica ni modifica automáticamente los cálculos financieros.</p>
+</section>
 
 <!-- INSTRUCCIONES RÁPIDAS -->
 <div class="card" style="background: linear-gradient(135deg, #fff9e6, #fff3cd); border: 3px solid #ffc107;">
@@ -889,6 +908,11 @@ tbody tr:hover{background:#f0fdfa;transform:none}
         Datos del Proyecto
     </div>
 
+    <div class="report-owner">
+      <label for="nombreResponsable"><strong>👤 Nombre de la persona responsable del informe *</strong></label>
+      <input id="nombreResponsable" type="text" maxlength="100" placeholder="Escribe el nombre completo" autocomplete="name" required>
+      <small>Este nombre aparecerá como responsable del informe enviado por correo y guardado en Google Sheets.</small>
+    </div>
     <div class="input-group">
         <label>💰 Inversión Inicial Total</label>
         <div class="input-wrapper">
@@ -1960,13 +1984,27 @@ async function enviarInformeGoogleSheets() {
         boton.innerHTML = '⏳ Guardando y enviando...';
 
         const r = ultimaEvaluacion;
+        const nombreResponsable = (document.getElementById('nombreResponsable')?.value || '').trim();
+        if (!nombreResponsable) { document.getElementById('nombreResponsable')?.focus(); throw new Error('Escribe el nombre completo de la persona responsable antes de enviar el informe.'); }
+        const tipoEnergia = document.getElementById('stageEnergy')?.value || 'solar';
+        const momentoDia = document.getElementById('stageTime')?.value || 'mediodia';
 
         const payload = {
+            nombreResponsable,
+            nombreProyecto: 'Evaluación ' + (tipoEnergia === 'eolica' ? 'eólica' : 'solar') + ' - ' + nombreResponsable,
+            responsable: nombreResponsable,
+            tipoEnergia,
+            momentoDia,
+            escenarioSeleccionado: r.escenario || 'base',
+            urlAplicacion: window.location.href,
             tipo: 'evaluacion_proyecto_energetico',
             fecha: new Date().toISOString(),
             pagina: window.location.href,
             proyecto: {
-                nombre: 'Proyecto energético',
+                nombre: 'Evaluación ' + (tipoEnergia === 'eolica' ? 'eólica' : 'solar') + ' - ' + nombreResponsable,
+                responsable: nombreResponsable,
+                tipoEnergia,
+                momentoDia,
                 inversion: Number(r.inversion) || 0,
                 vidaUtil: Number(r.vida) || 0,
                 generacionAnual: Number(r.generacionBase) || 0,
@@ -2014,7 +2052,7 @@ async function enviarInformeGoogleSheets() {
             mode: 'no-cors'
         });
 
-        alert('✅ Informe enviado.\n\nRevisa Google Sheets y el correo synedinramos779@gmail.com para confirmar la recepción.');
+        alert('✅ Solicitud de informe enviada para ' + nombreResponsable + '.\n\nRevisa Google Sheets y el correo configurado para confirmar la recepción.');
     } catch (error) {
         console.error('Error al enviar informe:', error);
         alert('❌ No se pudo enviar el informe.\n\n' + (error?.message || error));
@@ -2031,6 +2069,72 @@ document.addEventListener('keydown', function(e){
     if(typeof calcularProyecto === 'function') calcularProyecto();
   }
 });
+</script>
+
+
+<script>
+function actualizarEscena3D(){
+ const time=document.getElementById('stageTime')?.value||'mediodia';
+ const energy=document.getElementById('stageEnergy')?.value||'solar';
+ const sky=document.getElementById('stageSky'), sun=document.getElementById('stageSun'), object=document.getElementById('stageObject'), status=document.getElementById('stageStatus'), caption=document.getElementById('stageCaption');
+ const palettes={dia:['linear-gradient(#54bce9,#c5f0ff 72%,#63a66c)','#fff4a4','☀️ Día'],mediodia:['linear-gradient(#168ed0,#b8edff 72%,#5e9c60)','#fff6b2','☀️ Medio día'],tarde:['linear-gradient(#ff985e,#f9c2a1 58%,#6b8b69)','#ffe0a0','🌇 Tarde'],noche:['linear-gradient(#07152f,#243e69 72%,#172f36)','#dbeaff','🌙 Noche']};
+ const p=palettes[time]||palettes.mediodia; sky.style.background=p[0];sun.style.background=p[1];sun.style.boxShadow=time==='noche'?'0 0 22px 5px #dbeaff66':'0 0 36px 13px #fff6a288';sun.style.top=time==='tarde'?'105px':time==='noche'?'30px':'26px';sun.style.left=time==='tarde'?'72%':time==='noche'?'74%':'calc(50% - 29px)';sun.style.width=time==='noche'?'42px':'58px';sun.style.height=time==='noche'?'42px':'58px';
+ if(energy==='eolica'){
+  object.innerHTML='<div class="wind-scene"><div class="wind-tower"><div class="wind-hub"></div><div class="wind-blades"><i></i><i></i><i></i></div></div></div>';
+  caption.textContent='Aerogenerador en una escena 3D ilustrativa. La producción eólica real depende de la velocidad y continuidad del viento; esta animación no mide el recurso ni cambia automáticamente los cálculos.';
+ }else{
+  object.innerHTML='<div class="solar-scene"><div class="solar-array"><div><div class="solar-panel"></div><div class="solar-leg"></div></div><div><div class="solar-panel"></div><div class="solar-leg"></div></div><div><div class="solar-panel"></div><div class="solar-leg"></div></div></div></div>';
+  caption.textContent=time==='noche'?'Escena nocturna: los paneles no reciben radiación solar directa. La simulación es visual; no estima almacenamiento ni producción real.':'Paneles solares en una escena 3D ilustrativa. La generación real depende de irradiación, sombras, orientación y equipos; esta animación no es un pronóstico.';
+ }
+ const t={dia:'Día',noche:'Noche',mediodia:'Medio día',tarde:'Tarde'}[time];status.textContent=(time==='noche'?'🌙 ':time==='tarde'?'🌇 ':'☀️ ')+t+' · '+(energy==='eolica'?'Eólica':'Solar');
+}
+document.addEventListener('DOMContentLoaded',actualizarEscena3D);
+</script>
+
+<style>
+/* SEKE - asistente virtual integrado */
+#seke-launcher{position:fixed;right:22px;bottom:22px;z-index:9998;border:0;border-radius:999px;padding:14px 20px;background:linear-gradient(135deg,#087f8c,#155eef);color:#fff;font-weight:800;box-shadow:0 8px 28px #0003;cursor:pointer;font-size:15px}
+#seke-panel{position:fixed;right:22px;bottom:84px;width:min(390px,calc(100vw - 28px));height:min(560px,calc(100vh - 120px));z-index:9999;background:#fff;color:#172033;border-radius:18px;box-shadow:0 16px 55px #0004;display:none;overflow:hidden;border:1px solid #dbe4ee;font-family:Arial,sans-serif}
+#seke-panel.seke-open{display:flex;flex-direction:column}
+.seke-head{padding:16px;background:linear-gradient(135deg,#087f8c,#155eef);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.seke-head strong{font-size:18px}.seke-head small{display:block;margin-top:4px;opacity:.9}.seke-close{background:#ffffff24;color:white;border:0;border-radius:8px;font-size:22px;width:34px;height:34px;cursor:pointer}
+#seke-messages{padding:14px;overflow:auto;flex:1;background:#f5f8fc;display:flex;flex-direction:column;gap:10px}
+.seke-msg{padding:10px 12px;border-radius:13px;max-width:90%;font-size:13.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.seke-bot{align-self:flex-start;background:#fff;border:1px solid #e0e7ef;border-bottom-left-radius:4px}.seke-user{align-self:flex-end;background:#dbeafe;border-bottom-right-radius:4px}
+.seke-quick{display:flex;gap:6px;flex-wrap:wrap;padding:9px 12px;background:#fff;border-top:1px solid #e5eaf0}.seke-quick button{border:1px solid #cbd5e1;background:#fff;color:#155eef;border-radius:20px;padding:6px 9px;font-size:11px;cursor:pointer}
+.seke-form{display:flex;gap:8px;padding:11px;background:#fff;border-top:1px solid #e5eaf0}.seke-form input{min-width:0;flex:1;border:1px solid #cbd5e1;border-radius:10px;padding:11px;font-size:14px}.seke-form button{border:0;border-radius:10px;padding:0 15px;background:#155eef;color:#fff;font-weight:700;cursor:pointer}
+@media(max-width:480px){#seke-launcher{right:12px;bottom:12px}#seke-panel{right:8px;bottom:72px;width:calc(100vw - 16px);height:min(72vh,590px)}}
+</style>
+<button id="seke-launcher" type="button" aria-label="Abrir asistente SEKE" onclick="sekeToggle()">🤖 Hablar con SEKE</button>
+<section id="seke-panel" aria-label="Chatbot SEKE" aria-live="polite">
+ <header class="seke-head"><div><strong>🤖 SEKE</strong><small>Asistente virtual del Evaluador Energético</small></div><button class="seke-close" type="button" onclick="sekeToggle(false)" aria-label="Cerrar chat">×</button></header>
+ <div id="seke-messages"><div class="seke-msg seke-bot">¡Hola! Soy SEKE 👋 Puedo orientarte sobre cómo usar la aplicación, interpretar VAN, TIR, Payback y LCOE, revisar los escenarios o guardar el informe en Google Sheets. ¿Qué necesitas?</div></div>
+ <div class="seke-quick"><button type="button" onclick="sekeQuick('¿Cómo uso la aplicación?')">Cómo usar la app</button><button type="button" onclick="sekeQuick('Explícame VAN, TIR y LCOE')">Indicadores</button><button type="button" onclick="sekeQuick('¿Cómo envío el informe?')">Enviar informe</button></div>
+ <form class="seke-form" onsubmit="sekeSend(event)"><input id="seke-input" type="text" autocomplete="off" placeholder="Escribe tu pregunta..." aria-label="Pregunta para SEKE" required><button type="submit">Enviar</button></form>
+</section>
+<script>
+function sekeToggle(force){const panel=document.getElementById('seke-panel');const open=typeof force==='boolean'?force:!panel.classList.contains('seke-open');panel.classList.toggle('seke-open',open);if(open)setTimeout(()=>document.getElementById('seke-input')?.focus(),60)}
+function sekeQuick(text){document.getElementById('seke-input').value=text;sekeSend(new Event('submit',{cancelable:true}));}
+function sekeAdd(text,who){const box=document.getElementById('seke-messages');const el=document.createElement('div');el.className='seke-msg '+(who==='user'?'seke-user':'seke-bot');el.textContent=text;box.appendChild(el);box.scrollTop=box.scrollHeight;}
+function sekeSend(e){if(e)e.preventDefault();const input=document.getElementById('seke-input');const q=(input.value||'').trim();if(!q)return;input.value='';sekeAdd(q,'user');setTimeout(()=>sekeAdd(sekeAnswer(q),'bot'),120);}
+function sekeAnswer(question){
+ const q=question.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+ const r=typeof ultimaEvaluacion!=='undefined'?ultimaEvaluacion:null;
+ const money=n=>Number(n||0).toLocaleString('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+ if(/hola|buenos dias|buenas tardes|buenas noches|quien eres|quien es seke/.test(q))return '¡Hola! Soy SEKE, tu asistente virtual para aprender a utilizar el Evaluador Energético. Pregúntame por los datos, los cálculos, los escenarios, los resultados o el envío de informes.';
+ if(/como uso|como funciona|empezar|usar la app|que hago primero/.test(q))return 'Para empezar: 1) completa inversión, vida útil, generación anual y los demás parámetros; 2) selecciona conservador, base u optimista; 3) pulsa “Calcular Proyecto”; 4) revisa indicadores, flujo de caja y gráficas; 5) pulsa “Guardar en Google Sheets + Enviar Informe” para enviar el reporte.';
+ if(/van|valor actual neto/.test(q))return 'El VAN (Valor Actual Neto) compara el valor presente de los flujos futuros con la inversión inicial. En general, VAN positivo indica que el proyecto crea valor con la tasa de descuento usada; VAN negativo indica que no recupera el rendimiento exigido bajo esos supuestos.'+(r?'\nEn el último cálculo de esta sesión, el VAN es: '+money(r.van)+'.':'');
+ if(/tir|tasa interna/.test(q))return 'La TIR es la tasa de rentabilidad que hace que el VAN sea aproximadamente cero. Se suele comparar con la tasa de descuento: si la TIR la supera, puede ser una señal favorable, pero conviene revisar también el VAN, los riesgos y los supuestos.'+(r?'\nTIR del último cálculo: '+(r.tir==null?'No disponible':(Number(r.tir)*100).toLocaleString('es-CO',{maximumFractionDigits:2})+'%')+'.':'');
+ if(/payback|recuperacion|recuperar la inversion/.test(q))return 'El Payback estima cuánto tiempo tarda el proyecto en recuperar la inversión inicial con sus flujos. Un plazo más corto suele ser favorable, aunque el Payback simple no refleja por sí solo todos los flujos futuros.'+(r?'\nPayback del último cálculo: '+(r.payback==null?'No disponible':String(r.payback)+' años')+'.':'');
+ if(/lcoe|costo nivelado/.test(q))return 'El LCOE (costo nivelado de energía) estima el costo promedio por unidad de energía producida durante la vida del proyecto. Sirve para comparar alternativas si se calculan con supuestos equivalentes.'+(r?'\nLCOE del último cálculo: '+money(r.LCOE)+' por unidad de energía reportada por el modelo.':'');
+ if(/conservador|optimista|escenario|base/.test(q))return 'Los escenarios permiten probar distintos supuestos: conservador representa condiciones menos favorables, base representa el caso de referencia y optimista representa condiciones más favorables. Compara cómo cambian VAN, TIR, Payback y LCOE; los resultados dependen de los valores introducidos.';
+ if(/google sheets|correo|email|enviar informe|guardar informe|no llega|no aparece/.test(q))return 'Para enviar el informe, primero calcula el proyecto y después pulsa “Guardar en Google Sheets + Enviar Informe”. Luego revisa las hojas Registros, Flujo_Caja y Resumen, y la bandeja de entrada/spam de synedinramos779@gmail.com. La página no puede confirmar por sí sola la recepción: si no aparece, revisa el despliegue y los permisos de Apps Script.';
+ if(/error|no funciona|fall[ao]|problema/.test(q))return 'Vamos a revisarlo. Dime en qué momento ocurre: (1) al abrir la página, (2) al calcular, (3) al cambiar escenario, (4) al enviar a Google Sheets o (5) al recibir el correo. Si aparece un mensaje de error, cópialo aquí para orientarte mejor.';
+ if(/inversion|generacion|inflacion|degradacion|tasa de descuento|vida util|precio de energia/.test(q))return 'Estos campos son los supuestos de entrada del modelo. Introduce valores coherentes con tu proyecto y verifica unidades, moneda, porcentaje y horizonte de años. Cambiar un supuesto puede modificar el flujo de caja y todos los indicadores; evita interpretar los resultados como una garantía financiera.';
+ if(/flujo de caja|flujo caja|tabla|grafica|grafico/.test(q))return 'El flujo de caja muestra ingresos, costos y flujos netos por periodo; las gráficas ayudan a observar tendencias y recuperación. Úsalos junto con los indicadores y verifica que los supuestos de entrada sean realistas.';
+ if(/gracias|muchas gracias/.test(q))return '¡Con gusto! 😊 Estoy aquí para ayudarte a entender y utilizar la aplicación. Puedes preguntarme por un indicador, un campo o un error específico.';
+ return 'Puedo ayudarte con el funcionamiento del Evaluador Energético, sus campos, escenarios, VAN, TIR, Payback, LCOE, flujo de caja, gráficas y envío a Google Sheets/correo. Para responder mejor, dime qué parte de la aplicación estás usando o qué resultado quieres entender.\n\nNota: esta versión de SEKE responde con una guía integrada a la aplicación; para responder preguntas abiertas sobre cualquier tema mediante inteligencia artificial real, hace falta conectar un servicio de IA desde un backend seguro.';
+}
 </script>
 
 </body>
